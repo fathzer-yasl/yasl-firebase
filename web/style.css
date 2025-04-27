@@ -1,0 +1,192 @@
+body {
+  position: relative;
+
+  font-family: Arial, sans-serif;
+  background: #f6f8fa;
+  margin: 0;
+  padding: 0;
+}
+.container {
+  max-width: 400px;
+  margin: 40px auto;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  font-size: 1.07em;
+  position: relative;
+}
+
+.settings-btn {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25em 0.5em;
+  z-index: 3;
+  transition: background 0.2s;
+}
+.settings-btn:hover {
+  background: #e3f0fd;
+  border-radius: 50%;
+}
+h1 {
+  text-align: center;
+  color: #333;
+}
+ul#string-list {
+  list-style: none;
+  padding: 0;
+  margin: 2em 0 0 0;
+}
+
+.group-box {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 1.5em;
+  padding: 0.5em 0.5em 0.25em 0.5em;
+  background: #fafbfc;
+  transition: box-shadow 0.2s;
+}
+ul#string-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.25em 0;
+}
+.list-actions {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  gap: 0.25em;
+}
+ul#string-list input[type="checkbox"] {
+  transform: scale(1.1);
+  margin-right: 0.5em;
+}
+form {
+  display: flex;
+  gap: 0.5rem;
+}
+input[type="text"] {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+button {
+  padding: 0.5rem 1rem;
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+button:hover {
+  background: #1565c0;
+}
+
+form button[type="submit"] {
+  background: #fff;
+  border: 2px solid #1976d2;
+  color: #1976d2;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: background 0.2s, color 0.2s;
+}
+form button[type="submit"] svg rect {
+  fill: #1976d2;
+}
+form button[type="submit"]:hover {
+  background: #e3f0fd;
+}
+
+
+/* Flash (urgent) button styles */
+.flash-btn {
+  background: none;
+  border: none;
+  padding: 0 0.25em;
+  cursor: pointer;
+  vertical-align: middle;
+}
+.flash-btn svg {
+  transition: filter 0.2s;
+}
+.flash-btn:hover svg, .flash-btn:focus svg {
+  filter: brightness(1.2) drop-shadow(0 0 2px #d32f2f);
+}
+
+/* Settings modal styles */
+.settings-modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  z-index: 1000;
+  left: 0; top: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.3);
+}
+.settings-modal-content {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+  padding: 2em 2.5em 1.5em 2.5em;
+  min-width: 270px;
+  max-width: 90vw;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.settings-close {
+  position: absolute;
+  top: 0.5em; right: 0.5em;
+  background: none;
+  border: none;
+  font-size: 2em;
+  color: #888;
+  cursor: pointer;
+}
+#settings-user-info {
+  margin-bottom: 1.5em;
+  font-size: 0.95em;
+}
+#settings-user-info span {
+  font-size: 0.95em;
+}
+.sign-out-btn {
+  background: #fff;
+  border: 2px solid #1976d2;
+  color: #1976d2;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 1em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-top: 0.5em;
+}
+.sign-out-btn svg {
+  vertical-align: middle;
+}
+
+/* Remove button and sign-out button styles */
+.remove-btn {
+  background: #eee;
+  color: #c00;
+  border: 1px solid #ccc;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.95em;
+  margin-left: 1em;
+  transition: background 0.2s, color 0.2s;
+}
+.remove-btn:hover {
+  background: #ffdddd;
+  color: #a00;
+  border-color: #c00;
+}

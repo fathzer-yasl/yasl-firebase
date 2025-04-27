@@ -1,0 +1,9 @@
+{
+  "name": "firestore-list-app",
+  "version": "1.0.0",
+  "description": "A simple JS app to sync a string list using Firestore",
+  "main": "main.js",
+  "scripts": {},
+  "author": "",
+  "license": "MIT"
+}
