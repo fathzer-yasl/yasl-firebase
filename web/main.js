@@ -1,14 +1,6 @@
 // ==== FIREBASE CONFIGURATION ====
-// Replace with your own Firebase project config (see README for instructions)
-const firebaseConfig = {
-  apiKey: "AIzaSyCUWWFtA4QPxvE95-8SmkS7R2_j-VMwfaY",
-  authDomain: "yasl-457813.firebaseapp.com",
-  projectId: "yasl-457813",
-  storageBucket: "yasl-457813.firebasestorage.app",
-  messagingSenderId: "164800244090",
-  appId: "1:164800244090:web:3e162a0a5688b564424ec3",
-  measurementId: "G-6VKJJ92J3D"
-};
+// Import firebaseConfig from a separate file. Swap firebaseConfig.js for each environment (production, staging, etc).
+import { firebaseConfig } from './firebaseConfig.js';
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
@@ -26,10 +18,9 @@ const settingsClose = document.getElementById('settings-close');
 const userInfo = document.getElementById('settings-user-info');
 const userName = document.getElementById('user-name');
 const userEmail = document.getElementById('user-email');
-const authSection = document.getElementById('auth-section');
 const stringListElem = document.getElementById('string-list');
 const addForm = document.getElementById('add-form');
-const newStringInput = document.getElementById('new-string');
+const addItemInput = document.getElementById('add-item');
 
 const listRef = db.collection('stringList').doc('sharedList');
 let unsubscribeSnapshot = null;
@@ -144,7 +135,10 @@ function renderListItem(item, parentElem, items) {
       if (doc.exists && Array.isArray(doc.data().list)) {
         currentList = doc.data().list;
       }
-      const newList = currentList.map((it, i) => i === idx ? { ...it, urgent: !it.urgent } : it);
+      // Flip urgent and set checked to false
+      const newList = currentList.map((it, i) =>
+        i === idx ? { ...it, urgent: !it.urgent, checked: false } : it
+      );
       transaction.set(listRef, { list: newList });
     });
   };
@@ -179,9 +173,10 @@ function renderListItem(item, parentElem, items) {
 // Show/hide UI and handle Firestore subscription based on auth state
 function setUIForUser(user) {
   if (user) {
-    signInBtn.style.display = 'none';
+    signInBtn.style.display = 'none'; // Hide sign-in button
     addForm.style.display = '';
     stringListElem.style.display = '';
+    signOutBtn.style.display = ''; // Show sign-out button
     // Subscribe to Firestore updates
     if (unsubscribeSnapshot) unsubscribeSnapshot();
     unsubscribeSnapshot = listRef.onSnapshot(doc => {
@@ -193,11 +188,15 @@ function setUIForUser(user) {
       }
     });
   } else {
-    signInBtn.style.display = '';
+    // Remove any inline style first, then set to inline-block to override CSS !important
+    signInBtn.style.removeProperty('display');
+    signInBtn.offsetHeight; // force reflow
+    signInBtn.style.display = 'inline-block'; // Use inline-block for button
     userName.textContent = '';
     userEmail.textContent = '';
     addForm.style.display = 'none';
     stringListElem.style.display = 'none';
+    signOutBtn.style.display = 'none'; // Hide sign-out button
     renderList([]);
     if (unsubscribeSnapshot) {
       unsubscribeSnapshot();
@@ -237,6 +236,20 @@ if (darkModeToggle) {
     setDarkMode(e.target.checked);
   });
 }
+
+// Set app name and version in settings modal
+fetch('package.json')
+  .then(res => res.json())
+  .then(pkg => {
+    const infoDiv = document.getElementById('app-version-info');
+    if (infoDiv && pkg.name && pkg.version) {
+      infoDiv.textContent = `${pkg.name} v${pkg.version}`;
+    }
+  })
+  .catch(() => {
+    const infoDiv = document.getElementById('app-version-info');
+    if (infoDiv) infoDiv.textContent = '';
+  });
 
 settingsBtn.addEventListener('click', () => {
   const user = auth.currentUser;
@@ -285,7 +298,7 @@ addForm.addEventListener('submit', async (e) => {
     alert('Please sign in first.');
     return;
   }
-  const newStr = newStringInput.value.trim();
+  const newStr = addItemInput.value.trim();
   if (!newStr) return;
   await db.runTransaction(async (transaction) => {
     const doc = await transaction.get(listRef);
@@ -297,11 +310,11 @@ addForm.addEventListener('submit', async (e) => {
     const newItem = { name: newStr, checked: false, urgent: false };
     transaction.set(listRef, { list: [...currentList, newItem] });
   });
-  newStringInput.value = '';
+  addItemInput.value = ''; // Clear the input after submit
 });
 
 // On load, hide add form and list until auth state is known
 addForm.style.display = 'none';
 stringListElem.style.display = 'none';
 userInfo.style.display = 'none';
-signInBtn.style.display = '';
+signOutBtn.style.display = 'none'; // Hide sign-out button initially

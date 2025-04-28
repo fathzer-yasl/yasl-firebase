@@ -14,32 +14,45 @@ body {
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.07);
   font-size: 1.07em;
-  position: relative;
 }
 
+.top-bar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5em;
+}
+.app-title {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #1976d2;
+  letter-spacing: 0.04em;
+}
+
+
 .settings-btn {
-  position: absolute;
-  top: 18px;
-  right: 18px;
   background: none;
   border: none;
   cursor: pointer;
   padding: 0.25em 0.5em;
-  z-index: 3;
   transition: background 0.2s;
+  margin-left: 1em;
 }
 .settings-btn:hover {
   background: #e3f0fd;
   border-radius: 50%;
 }
-h1 {
-  text-align: center;
-  color: #333;
-}
+/* h1 removed, replaced by .app-title */
 ul#string-list {
   list-style: none;
-  padding: 0;
-  margin: 2em 0 0 0;
+  padding-left: 0;
+  padding-right: 0;
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 2em;
+  margin-bottom: 0;
+  /* Ensures list aligns with add-form */
 }
 
 .group-box {
@@ -50,7 +63,7 @@ ul#string-list {
   background: #fafbfc;
   transition: box-shadow 0.2s;
 }
-ul#string-list li {
+ul#add-item-list li {
   display: flex;
   align-items: center;
   gap: 0.5em;
@@ -62,13 +75,19 @@ ul#string-list li {
   margin-left: auto;
   gap: 0.25em;
 }
-ul#string-list input[type="checkbox"] {
+ul#add-item-list input[type="checkbox"] {
   transform: scale(1.1);
   margin-right: 0.5em;
 }
 form {
   display: flex;
   gap: 0.5rem;
+  margin-bottom: 1.5em; /* vertical spacing below add item form */
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
+  /* Ensures form aligns with string-list */
 }
 input[type="text"] {
   flex: 1;
@@ -189,4 +208,9 @@ form button[type="submit"]:hover {
   background: #ffdddd;
   color: #a00;
   border-color: #c00;
+}
+
+/* Remove !important so JS can override display */
+#sign-in-btn {
+  display: none;
 }

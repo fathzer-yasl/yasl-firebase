@@ -20,7 +20,7 @@ h1 {
   background: #24292e;
   border: 1px solid #333;
 }
-ul#string-list li {
+ul#add-item-list li {
   color: #e0e0e0;
 }
 input[type="text"],
