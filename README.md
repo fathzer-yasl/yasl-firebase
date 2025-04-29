@@ -57,9 +57,9 @@ A simple JavaScript web app that stores a shopping list in Firestore and updates
 
 5. Optionally, **Enable your domain in Firebase Authentication panel**
 If you plan to expose this application on the Internet, you should:
-1. First having your own domain.
-2. Allow that domain to use Authentication in the Firebase console (go to your project, then **authentication**, then **parameters** and finally **Authorized domains**).
-3. Restrict access to your firestore database using the Firebase console.  
+   1. Have your own domain.
+   2. Allow that domain to use Authentication in the Firebase console (go to your project, then **authentication**, then **parameters** and finally **Authorized domains**).
+   3. Restrict access to your firestore database using the Firebase console.  
 Go to **Firestore database**, then **Rules** and set:
      ```
       rules_version = '2';
