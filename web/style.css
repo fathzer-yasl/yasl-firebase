@@ -28,13 +28,12 @@ body {
   font-weight: bold;
   color: #1976d2;
   letter-spacing: 0.04em;
+  cursor: default;
 }
-
 
 .settings-btn {
   background: none;
   border: none;
-  cursor: pointer;
   padding: 0.25em 0.5em;
   transition: background 0.2s;
   margin-left: 1em;
@@ -43,7 +42,7 @@ body {
   background: #e3f0fd;
   border-radius: 50%;
 }
-/* h1 removed, replaced by .app-title */
+
 ul#string-list {
   list-style: none;
   padding-left: 0;
@@ -53,6 +52,13 @@ ul#string-list {
   margin-top: 2em;
   margin-bottom: 0;
   /* Ensures list aligns with add-form */
+}
+
+ul#string-list span {
+  cursor: default;
+}
+ul#string-list input[type="checkbox"] {
+  cursor: pointer;
 }
 
 .group-box {
@@ -97,8 +103,7 @@ input[type="text"] {
 }
 button {
   padding: 0.5rem 1rem;
-  background: #1976d2;
-  color: #fff;
+  background: none;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -125,10 +130,6 @@ form button[type="submit"]:hover {
 
 /* Flash (urgent) button styles */
 .flash-btn {
-  background: none;
-  border: none;
-  padding: 0 0.25em;
-  cursor: pointer;
   vertical-align: middle;
 }
 .flash-btn svg {
@@ -176,7 +177,7 @@ form button[type="submit"]:hover {
 #settings-user-info span {
   font-size: 0.95em;
 }
-.sign-out-btn {
+#sign-out-btn {
   background: #fff;
   border: 2px solid #1976d2;
   color: #1976d2;
@@ -189,28 +190,20 @@ form button[type="submit"]:hover {
   gap: 0.5em;
   margin-top: 0.5em;
 }
-.sign-out-btn svg {
+#sign-out-btn:hover {
+  background: #1565c0;
+}
+#sign-out-btn svg {
   vertical-align: middle;
-}
-
-/* Remove button and sign-out button styles */
-.remove-btn {
-  background: #eee;
-  color: #c00;
-  border: 1px solid #ccc;
-  padding: 0.25rem 0.75rem;
-  border-radius: 4px;
-  font-size: 0.95em;
-  margin-left: 1em;
-  transition: background 0.2s, color 0.2s;
-}
-.remove-btn:hover {
-  background: #ffdddd;
-  color: #a00;
-  border-color: #c00;
+  color: #190000;
 }
 
 /* Remove !important so JS can override display */
 #sign-in-btn {
   display: none;
+  color: #fff;
+  background: #1976d2;
+}
+#sign-in-btn:hover {
+  background: #1565c0;
 }
