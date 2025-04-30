@@ -146,16 +146,8 @@ function renderListItem(item, parentElem, items) {
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ff0000" style="vertical-align:middle">
     <path d="M18 6L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6M14 10V17M10 10V17" stroke="#ff0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
   </svg> `;
-  btn.onclick = async () => {
-    await db.runTransaction(async (transaction) => {
-      const doc = await transaction.get(listRef);
-      let currentList = [];
-      if (doc.exists && Array.isArray(doc.data().list)) {
-        currentList = doc.data().list;
-      }
-      const newList = currentList.filter((_, i) => i !== idx);
-      transaction.set(listRef, { list: newList });
-    });
+  btn.onclick = () => {
+    showRemoveModal(idx);
   };
 
   // Right-side button group
@@ -187,7 +179,6 @@ function setUIForUser(user) {
   } else {
     // Remove any inline style first, then set to inline-block to override CSS !important
     signInBtn.style.removeProperty('display');
-    signInBtn.offsetHeight; // force reflow
     signInBtn.style.display = 'inline-block'; // Use inline-block for button
     userName.textContent = '';
     userEmail.textContent = '';
@@ -271,6 +262,45 @@ settingsClose.addEventListener('click', () => {
 settingsModal.addEventListener('click', (e) => {
   if (e.target === settingsModal) settingsModal.style.display = 'none';
 });
+
+// Modal for remove confirmation
+const removeModal = document.getElementById('remove-modal');
+const removeConfirmBtn = document.getElementById('remove-confirm-btn');
+const removeCancelBtn = document.getElementById('remove-cancel-btn');
+let pendingRemoveIdx = null;
+
+function showRemoveModal(idx) {
+  pendingRemoveIdx = idx;
+  removeModal.style.display = 'flex';
+}
+function hideRemoveModal() {
+  pendingRemoveIdx = null;
+  removeModal.style.display = 'none';
+}
+if (removeCancelBtn) {
+  removeCancelBtn.onclick = hideRemoveModal;
+}
+if (removeModal) {
+  removeModal.addEventListener('click', (e) => {
+    if (e.target === removeModal) hideRemoveModal();
+  });
+}
+if (removeConfirmBtn) {
+  removeConfirmBtn.onclick = async () => {
+    if (pendingRemoveIdx == null) return;
+    const idx = pendingRemoveIdx;
+    hideRemoveModal();
+    await db.runTransaction(async (transaction) => {
+      const doc = await transaction.get(listRef);
+      let currentList = [];
+      if (doc.exists && Array.isArray(doc.data().list)) {
+        currentList = doc.data().list;
+      }
+      const newList = currentList.filter((_, i) => i !== idx);
+      transaction.set(listRef, { list: newList });
+    });
+  };
+}
 
 // Sign in and sign out button handlers
 signInBtn.addEventListener('click', () => {

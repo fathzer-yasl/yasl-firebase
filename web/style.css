@@ -161,6 +161,15 @@ form button[type="submit"]:hover {
   flex-direction: column;
   align-items: flex-start;
 }
+/* Add this to ensure the row containing user info and sign out button is flex and vertically centered */
+#settings-modal .settings-modal-content > div:nth-child(3) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 1em;
+  gap: 1em;
+}
 .settings-close {
   position: absolute;
   top: 0.5em; right: 0.5em;
@@ -171,7 +180,10 @@ form button[type="submit"]:hover {
   cursor: pointer;
 }
 #settings-user-info {
-  margin-bottom: 1.5em;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-bottom: 0; /* Remove extra margin so it aligns vertically */
   font-size: 0.95em;
 }
 #settings-user-info span {
@@ -188,7 +200,7 @@ form button[type="submit"]:hover {
   display: flex;
   align-items: center;
   gap: 0.5em;
-  margin-top: 0.5em;
+  margin-top: 0; /* Remove extra margin so it aligns vertically */
 }
 #sign-out-btn:hover {
   background: #1565c0;
@@ -198,12 +210,38 @@ form button[type="submit"]:hover {
   color: #190000;
 }
 
-/* Remove !important so JS can override display */
 #sign-in-btn {
   display: none;
+}
+
+.text-btn {
+  min-width:70px;
   color: #fff;
   background: #1976d2;
 }
-#sign-in-btn:hover {
+.text-btn:hover {
   background: #1565c0;
+}
+
+.remove-modal-title {
+  margin-bottom:1.5em;
+  width:100%;
+  text-align:center;
+}
+
+/* Right-align buttons in remove-modal dialog */
+.remove-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5em;
+  margin-top: 1em;
+  width: 100%; /* Ensure full width for right alignment */
+  padding-right: 0; /* Remove if any padding interferes */
+}
+
+#remove-confirm-btn {
+  background: #d32f2f;
+}
+#remove-confirm-btn:hover {
+  background: #a31f1f;
 }

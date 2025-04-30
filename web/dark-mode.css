@@ -52,10 +52,4 @@ input[type="text"]::placeholder {
   background: #23272a;
 }
 
-#sign-in-btn {
-  background: #1976d2;
-  color: #fff;
-}
-#sign-in-btn:hover {
-  background: #1565c0;
-}
+
