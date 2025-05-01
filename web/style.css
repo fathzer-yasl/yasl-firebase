@@ -127,7 +127,6 @@ form button[type="submit"]:hover {
   background: #e3f0fd;
 }
 
-
 /* Flash (urgent) button styles */
 .flash-btn {
   vertical-align: middle;
@@ -258,4 +257,8 @@ form button[type="submit"]:hover {
 }
 #remove-confirm-btn:hover {
   background: #a31f1f;
+}
+
+.lists-btn {
+  margin-right: 0.5em;
 }

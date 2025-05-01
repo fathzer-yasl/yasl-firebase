@@ -22,6 +22,9 @@ const stringListElem = document.getElementById('string-list');
 const addForm = document.getElementById('add-form');
 const addItemInput = document.getElementById('add-item');
 
+// Reference to the currently selected list document
+let currentListDocRef = db.collection('stringList').doc('sharedList');
+
 const listRef = db.collection('stringList').doc('sharedList');
 let unsubscribeSnapshot = null;
 
@@ -92,7 +95,7 @@ function renderListItem(item, parentElem, items) {
   checkbox.style.marginRight = '0.5em';
   checkbox.onclick = async () => {
     await db.runTransaction(async (transaction) => {
-      const doc = await transaction.get(listRef);
+      const doc = await transaction.get(currentListDocRef);
       let currentList = [];
       if (doc.exists && Array.isArray(doc.data().list)) {
         currentList = doc.data().list;
@@ -106,7 +109,7 @@ function renderListItem(item, parentElem, items) {
           urgent: newChecked ? false : it.urgent // if checked, urgent is false
         };
       });
-      transaction.set(listRef, { list: newList });
+      transaction.set(currentListDocRef, { ...doc.data(), list: newList });
     });
   };
   li.appendChild(checkbox);
@@ -124,7 +127,7 @@ function renderListItem(item, parentElem, items) {
   flashBtn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle"><path d="M7 2L17 13H10L13 22L3 11H10L7 2Z" fill="${item.urgent ? '#d32f2f' : '#bbb'}"/></svg>`;
   flashBtn.onclick = async () => {
     await db.runTransaction(async (transaction) => {
-      const doc = await transaction.get(listRef);
+      const doc = await transaction.get(currentListDocRef);
       let currentList = [];
       if (doc.exists && Array.isArray(doc.data().list)) {
         currentList = doc.data().list;
@@ -133,7 +136,7 @@ function renderListItem(item, parentElem, items) {
       const newList = currentList.map((it, i) =>
         i === idx ? { ...it, urgent: !it.urgent, checked: false } : it
       );
-      transaction.set(listRef, { list: newList });
+      transaction.set(currentListDocRef, { ...doc.data(), list: newList });
     });
   };
 
@@ -166,16 +169,8 @@ function setUIForUser(user) {
     addForm.style.display = '';
     stringListElem.style.display = '';
     signOutBtn.style.display = ''; // Show sign-out button
-    // Subscribe to Firestore updates
-    if (unsubscribeSnapshot) unsubscribeSnapshot();
-    unsubscribeSnapshot = listRef.onSnapshot(doc => {
-      const data = doc.data();
-      if (data && Array.isArray(data.list)) {
-        renderList(data.list);
-      } else {
-        renderList([]);
-      }
-    });
+    // Subscribe to Firestore updates for the current list
+    subscribeToList(currentListDocRef);
   } else {
     // Remove any inline style first, then set to inline-block to override CSS !important
     signInBtn.style.removeProperty('display');
@@ -190,6 +185,8 @@ function setUIForUser(user) {
       unsubscribeSnapshot();
       unsubscribeSnapshot = null;
     }
+    // Reset to default list on sign out
+    currentListDocRef = db.collection('stringList').doc('sharedList');
   }
 }
 
@@ -291,13 +288,13 @@ if (removeConfirmBtn) {
     const idx = pendingRemoveIdx;
     hideRemoveModal();
     await db.runTransaction(async (transaction) => {
-      const doc = await transaction.get(listRef);
+      const doc = await transaction.get(currentListDocRef);
       let currentList = [];
       if (doc.exists && Array.isArray(doc.data().list)) {
         currentList = doc.data().list;
       }
       const newList = currentList.filter((_, i) => i !== idx);
-      transaction.set(listRef, { list: newList });
+      transaction.set(currentListDocRef, { ...doc.data(), list: newList });
     });
   };
 }
@@ -315,6 +312,10 @@ signOutBtn.addEventListener('click', () => {
 // Listen for auth state changes
 auth.onAuthStateChanged(user => {
   setUIForUser(user);
+  const listsBtn = document.getElementById('lists-btn');
+  if (listsBtn) {
+    listsBtn.style.display = user ? '' : 'none';
+  }
 });
 
 // Add new item (only if signed in)
@@ -328,14 +329,14 @@ addForm.addEventListener('submit', async (e) => {
   const newStr = addItemInput.value.trim();
   if (!newStr) return;
   await db.runTransaction(async (transaction) => {
-    const doc = await transaction.get(listRef);
+    const doc = await transaction.get(currentListDocRef);
     let currentList = [];
     if (doc.exists && Array.isArray(doc.data().list)) {
       currentList = doc.data().list;
     }
     // Add as an object with name/checked/urgent
     const newItem = { name: newStr, checked: false, urgent: false };
-    transaction.set(listRef, { list: [...currentList, newItem] });
+    transaction.set(currentListDocRef, { ...doc.data(), list: [...currentList, newItem] });
   });
   addItemInput.value = ''; // Clear the input after submit
 });
@@ -345,3 +346,143 @@ addForm.style.display = 'none';
 stringListElem.style.display = 'none';
 userInfo.style.display = 'none';
 signOutBtn.style.display = 'none'; // Hide sign-out button initially
+
+// Show/hide main-list-view and lists-panel when lists button is clicked
+document.addEventListener('DOMContentLoaded', () => {
+  const listsBtn = document.getElementById('lists-btn');
+  const listsPanel = document.getElementById('lists-panel');
+  const listsClose = document.getElementById('lists-close');
+  const mainListView = document.getElementById('main-list-view');
+  const addListBtn = document.getElementById('add-list-btn');
+  const newListNameInput = document.getElementById('new-list-name');
+
+  // Helper to render the user's lists
+  async function renderUserLists() {
+    // Wait for DOM to be ready
+    const ownedListsDiv = document.getElementById('user-owned-lists');
+    const sharedListsDiv = document.getElementById('user-shared-lists');
+    const ownedSection = document.getElementById('user-owned-lists-section');
+    const sharedSection = document.getElementById('user-shared-lists-section');
+    if (!ownedListsDiv || !sharedListsDiv || !ownedSection || !sharedSection) return;
+    ownedListsDiv.innerHTML = '';
+    sharedListsDiv.innerHTML = '';
+    let hasOwned = false, hasShared = false;
+    const user = auth.currentUser;
+    if (!user) return;
+    const querySnapshot = await db.collection('stringList')
+      .where('users', 'array-contains', user.email)
+      .get();
+    querySnapshot.forEach(doc => {
+      const data = doc.data();
+      const usersArr = Array.isArray(data.users) ? data.users : [];
+      const isOwner = usersArr[0] === user.email;
+      const div = document.createElement('div');
+      div.className = 'user-list-row';
+      div.style.display = 'flex';
+      div.style.alignItems = 'center';
+      div.style.justifyContent = 'space-between';
+      div.style.padding = '0.3em 0';
+      // List name (clickable)
+      const nameSpan = document.createElement('span');
+      nameSpan.textContent = data.name || doc.id;
+      nameSpan.style.cursor = 'pointer';
+      nameSpan.style.color = '#1976d2';
+      nameSpan.style.textDecoration = 'underline';
+      nameSpan.onclick = () => {
+        listsPanel.style.display = 'none';
+        mainListView.style.display = '';
+        currentListDocRef = db.collection('stringList').doc(doc.id);
+        subscribeToList(currentListDocRef);
+      };
+      // Progress: unchecked/total
+      let unchecked = 0, total = 0;
+      if (Array.isArray(data.list)) {
+        total = data.list.length;
+        unchecked = data.list.filter(item => !item.checked).length;
+      }
+      const progressSpan = document.createElement('span');
+      progressSpan.textContent = `${unchecked} / ${total}`;
+      progressSpan.style.color = '#1976d2';
+      progressSpan.style.fontSize = '0.97em';
+      progressSpan.style.marginLeft = '1em';
+      div.appendChild(nameSpan);
+      div.appendChild(progressSpan);
+      if (isOwner) {
+        hasOwned = true;
+        ownedListsDiv.appendChild(div);
+      } else {
+        hasShared = true;
+        sharedListsDiv.appendChild(div);
+      }
+    });
+    ownedSection.style.display = hasOwned ? '' : 'none';
+    sharedSection.style.display = hasShared ? '' : 'none';
+    if (!hasOwned && !hasShared) {
+      ownedListsDiv.innerHTML = '<div style="color:#888;font-size:0.95em;">No lists found.</div>';
+      ownedSection.style.display = '';
+      sharedSection.style.display = 'none';
+    }
+  }
+
+  // Add new list
+  if (addListBtn && newListNameInput) {
+    addListBtn.onclick = async () => {
+      const user = auth.currentUser;
+      const name = newListNameInput.value.trim();
+      if (!user || !name) return;
+      // Create a new document with a generated id
+      await db.collection('stringList').add({
+        name,
+        users: [user.email],
+        list: []
+      });
+      newListNameInput.value = '';
+      renderUserLists();
+    };
+  }
+
+  if (listsBtn && listsPanel && listsClose && mainListView) {
+    listsBtn.addEventListener('click', () => {
+      listsPanel.style.display = 'block';
+      mainListView.style.display = 'none';
+      renderUserLists();
+    });
+    listsClose.addEventListener('click', () => {
+      listsPanel.style.display = 'none';
+      mainListView.style.display = '';
+    });
+  }
+});
+
+// Modal open/close logic for lists modal
+document.addEventListener('DOMContentLoaded', () => {
+  const listsBtn = document.getElementById('lists-btn');
+  const listsModal = document.getElementById('lists-modal');
+  const listsClose = document.getElementById('lists-close');
+
+  if (listsBtn && listsModal && listsClose) {
+    listsBtn.addEventListener('click', () => {
+      listsModal.style.display = 'block';
+    });
+    listsClose.addEventListener('click', () => {
+      listsModal.style.display = 'none';
+    });
+    // Optional: close modal when clicking outside content
+    listsModal.addEventListener('click', (e) => {
+      if (e.target === listsModal) listsModal.style.display = 'none';
+    });
+  }
+});
+
+// Helper to subscribe to the selected list
+function subscribeToList(docRef) {
+  if (unsubscribeSnapshot) unsubscribeSnapshot();
+  unsubscribeSnapshot = docRef.onSnapshot(doc => {
+    const data = doc.data();
+    if (data && Array.isArray(data.list)) {
+      renderList(data.list);
+    } else {
+      renderList([]);
+    }
+  });
+}
