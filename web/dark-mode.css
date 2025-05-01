@@ -39,8 +39,11 @@ input[type="text"]::placeholder {
 .settings-close {
   color: #bbb;
 }
-#settings-user-info span {
+#settings-user-name {
   color: #b0b0b0;
+}
+#user-email {
+  color: #666;
 }
 
 #sign-out-btn {
