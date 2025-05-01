@@ -28,13 +28,12 @@ body {
   font-weight: bold;
   color: #1976d2;
   letter-spacing: 0.04em;
+  cursor: default;
 }
-
 
 .settings-btn {
   background: none;
   border: none;
-  cursor: pointer;
   padding: 0.25em 0.5em;
   transition: background 0.2s;
   margin-left: 1em;
@@ -43,7 +42,7 @@ body {
   background: #e3f0fd;
   border-radius: 50%;
 }
-/* h1 removed, replaced by .app-title */
+
 ul#string-list {
   list-style: none;
   padding-left: 0;
@@ -53,6 +52,13 @@ ul#string-list {
   margin-top: 2em;
   margin-bottom: 0;
   /* Ensures list aligns with add-form */
+}
+
+ul#string-list span {
+  cursor: default;
+}
+ul#string-list input[type="checkbox"] {
+  cursor: pointer;
 }
 
 .group-box {
@@ -97,8 +103,7 @@ input[type="text"] {
 }
 button {
   padding: 0.5rem 1rem;
-  background: #1976d2;
-  color: #fff;
+  background: none;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -125,10 +130,6 @@ form button[type="submit"]:hover {
 
 /* Flash (urgent) button styles */
 .flash-btn {
-  background: none;
-  border: none;
-  padding: 0 0.25em;
-  cursor: pointer;
   vertical-align: middle;
 }
 .flash-btn svg {
@@ -160,6 +161,15 @@ form button[type="submit"]:hover {
   flex-direction: column;
   align-items: flex-start;
 }
+/* Add this to ensure the row containing user info and sign out button is flex and vertically centered */
+#settings-modal .settings-modal-content > div:nth-child(3) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 1em;
+  gap: 1em;
+}
 .settings-close {
   position: absolute;
   top: 0.5em; right: 0.5em;
@@ -170,13 +180,16 @@ form button[type="submit"]:hover {
   cursor: pointer;
 }
 #settings-user-info {
-  margin-bottom: 1.5em;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-bottom: 0; /* Remove extra margin so it aligns vertically */
   font-size: 0.95em;
 }
 #settings-user-info span {
   font-size: 0.95em;
 }
-.sign-out-btn {
+#sign-out-btn {
   background: #fff;
   border: 2px solid #1976d2;
   color: #1976d2;
@@ -187,30 +200,48 @@ form button[type="submit"]:hover {
   display: flex;
   align-items: center;
   gap: 0.5em;
-  margin-top: 0.5em;
+  margin-top: 0; /* Remove extra margin so it aligns vertically */
 }
-.sign-out-btn svg {
+#sign-out-btn:hover {
+  background: #1565c0;
+}
+#sign-out-btn svg {
   vertical-align: middle;
+  color: #190000;
 }
 
-/* Remove button and sign-out button styles */
-.remove-btn {
-  background: #eee;
-  color: #c00;
-  border: 1px solid #ccc;
-  padding: 0.25rem 0.75rem;
-  border-radius: 4px;
-  font-size: 0.95em;
-  margin-left: 1em;
-  transition: background 0.2s, color 0.2s;
-}
-.remove-btn:hover {
-  background: #ffdddd;
-  color: #a00;
-  border-color: #c00;
-}
-
-/* Remove !important so JS can override display */
 #sign-in-btn {
   display: none;
+}
+
+.text-btn {
+  min-width:70px;
+  color: #fff;
+  background: #1976d2;
+}
+.text-btn:hover {
+  background: #1565c0;
+}
+
+.remove-modal-title {
+  margin-bottom:1.5em;
+  width:100%;
+  text-align:center;
+}
+
+/* Right-align buttons in remove-modal dialog */
+.remove-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5em;
+  margin-top: 1em;
+  width: 100%; /* Ensure full width for right alignment */
+  padding-right: 0; /* Remove if any padding interferes */
+}
+
+#remove-confirm-btn {
+  background: #d32f2f;
+}
+#remove-confirm-btn:hover {
+  background: #a31f1f;
 }

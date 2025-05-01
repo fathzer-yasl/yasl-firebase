@@ -6,9 +6,6 @@ body {
   background: #23272a;
   box-shadow: 0 2px 8px rgba(0,0,0,0.35);
 }
-h1 {
-  color: #f3f3f3;
-}
 .settings-btn {
   background: none;
   color: #90caf9;
@@ -32,13 +29,6 @@ form button[type="submit"] {
 input[type="text"]::placeholder {
   color: #888;
 }
-button {
-  background: #1976d2;
-  color: #fff;
-}
-button:hover {
-  background: #1565c0;
-}
 .settings-modal {
   background: rgba(20,20,20,0.85);
 }
@@ -52,21 +42,14 @@ button:hover {
 #settings-user-info span {
   color: #b0b0b0;
 }
-.sign-out-btn {
+
+#sign-out-btn {
   background: #181a1b;
   color: #90caf9;
   border: 2px solid #1976d2;
 }
-.sign-out-btn:hover {
+#sign-out-btn:hover {
   background: #23272a;
 }
-.remove-btn {
-  background: #2d2d2d;
-  color: #f44336;
-  border: 1px solid #555;
-}
-.remove-btn:hover {
-  background: #3a2323;
-  color: #ffaaaa;
-  border-color: #c00;
-}
+
+
