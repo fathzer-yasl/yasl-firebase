@@ -23,7 +23,24 @@ const addForm = document.getElementById('add-form');
 const addItemInput = document.getElementById('add-item');
 
 // Reference to the currently selected list document
-let currentListDocRef = db.collection('stringList').doc('sharedList');
+let currentListDocRef = null; // Start as null, set after auth
+
+const appTitleElem = document.querySelector('.app-title'); // Add this line
+
+// Store last list id in localStorage
+function setLastListId(listId) {
+  const user = auth.currentUser;
+  if (user && listId) {
+    localStorage.setItem('yasl-last-list-' + user.uid, listId);
+  }
+}
+function getLastListId() {
+  const user = auth.currentUser;
+  if (user) {
+    return localStorage.getItem('yasl-last-list-' + user.uid);
+  }
+  return null;
+}
 
 const listRef = db.collection('stringList').doc('sharedList');
 let unsubscribeSnapshot = null;
@@ -170,7 +187,9 @@ function setUIForUser(user) {
     stringListElem.style.display = '';
     signOutBtn.style.display = ''; // Show sign-out button
     // Subscribe to Firestore updates for the current list
-    subscribeToList(currentListDocRef);
+    if (currentListDocRef) {
+      subscribeToList(currentListDocRef);
+    }
   } else {
     // Remove any inline style first, then set to inline-block to override CSS !important
     signInBtn.style.removeProperty('display');
@@ -351,14 +370,12 @@ signOutBtn.style.display = 'none'; // Hide sign-out button initially
 document.addEventListener('DOMContentLoaded', () => {
   const listsBtn = document.getElementById('lists-btn');
   const listsPanel = document.getElementById('lists-panel');
-  const listsClose = document.getElementById('lists-close');
   const mainListView = document.getElementById('main-list-view');
   const addListBtn = document.getElementById('add-list-btn');
   const newListNameInput = document.getElementById('new-list-name');
 
   // Helper to render the user's lists
-  async function renderUserLists() {
-    // Wait for DOM to be ready
+  window.renderUserLists = async function(selectListId = null) {
     const ownedListsDiv = document.getElementById('user-owned-lists');
     const sharedListsDiv = document.getElementById('user-shared-lists');
     const ownedSection = document.getElementById('user-owned-lists-section');
@@ -367,22 +384,40 @@ document.addEventListener('DOMContentLoaded', () => {
     ownedListsDiv.innerHTML = '';
     sharedListsDiv.innerHTML = '';
     let hasOwned = false, hasShared = false;
+    let foundListToSelect = false;
     const user = auth.currentUser;
     if (!user) return;
-    const querySnapshot = await db.collection('stringList')
-      .where('users', 'array-contains', user.email)
-      .get();
-    querySnapshot.forEach(doc => {
+
+    // Query lists where user is in 'users' or in 'guests'
+    const [usersSnap, guestsSnap] = await Promise.all([
+      db.collection('stringList').where('users', 'array-contains', user.email).get(),
+      db.collection('stringList').where('guests', 'array-contains', user.email).get()
+    ]);
+    // Merge results, avoiding duplicates
+    const seen = new Set();
+    const allDocs = [];
+    usersSnap.forEach(doc => {
+      seen.add(doc.id);
+      allDocs.push(doc);
+    });
+    guestsSnap.forEach(doc => {
+      if (!seen.has(doc.id)) {
+        allDocs.push(doc);
+      }
+    });
+
+    allDocs.forEach(doc => {
       const data = doc.data();
       const usersArr = Array.isArray(data.users) ? data.users : [];
-      const isOwner = usersArr[0] === user.email;
+      const guestsArr = Array.isArray(data.guests) ? data.guests : [];
+      const isOwner = usersArr.includes(user.email);
+      const isGuest = !isOwner && guestsArr.includes(user.email);
       const div = document.createElement('div');
       div.className = 'user-list-row';
       div.style.display = 'flex';
       div.style.alignItems = 'center';
       div.style.justifyContent = 'space-between';
       div.style.padding = '0.3em 0';
-      // List name (clickable)
       const nameSpan = document.createElement('span');
       nameSpan.textContent = data.name || doc.id;
       nameSpan.style.cursor = 'pointer';
@@ -392,6 +427,8 @@ document.addEventListener('DOMContentLoaded', () => {
         listsPanel.style.display = 'none';
         mainListView.style.display = '';
         currentListDocRef = db.collection('stringList').doc(doc.id);
+        setLastListId(doc.id);
+        clearShowListsPanelFlag();
         subscribeToList(currentListDocRef);
       };
       // Progress: unchecked/total
@@ -410,9 +447,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (isOwner) {
         hasOwned = true;
         ownedListsDiv.appendChild(div);
-      } else {
+      } else if (isGuest) {
         hasShared = true;
         sharedListsDiv.appendChild(div);
+      }
+      // Auto-select last list if needed
+      if (selectListId && doc.id === selectListId && !foundListToSelect) {
+        foundListToSelect = true;
+        setTimeout(() => {
+          nameSpan.click();
+        }, 0);
       }
     });
     ownedSection.style.display = hasOwned ? '' : 'none';
@@ -422,7 +466,14 @@ document.addEventListener('DOMContentLoaded', () => {
       ownedSection.style.display = '';
       sharedSection.style.display = 'none';
     }
-  }
+    // If selectListId was provided but not found, show lists panel
+    if (selectListId && !foundListToSelect) {
+      listsPanel.style.display = 'block';
+      mainListView.style.display = 'none';
+    }
+    // Set app title to "YASL" when showing lists panel
+    if (appTitleElem) appTitleElem.textContent = "YASL";
+  };
 
   // Add new list
   if (addListBtn && newListNameInput) {
@@ -431,26 +482,37 @@ document.addEventListener('DOMContentLoaded', () => {
       const name = newListNameInput.value.trim();
       if (!user || !name) return;
       // Create a new document with a generated id
-      await db.collection('stringList').add({
+      const docRef = await db.collection('stringList').add({
         name,
         users: [user.email],
         list: []
       });
       newListNameInput.value = '';
-      renderUserLists();
+      setLastListId(docRef.id);
+      renderUserLists(docRef.id);
     };
   }
 
-  if (listsBtn && listsPanel && listsClose && mainListView) {
+  if (listsBtn && listsPanel && mainListView) {
     listsBtn.addEventListener('click', () => {
       listsPanel.style.display = 'block';
       mainListView.style.display = 'none';
+      // Set flag so reload stays on lists-panel
+      const user = auth.currentUser;
+      if (user) {
+        localStorage.setItem('yasl-show-lists-panel-' + user.uid, '1');
+      }
+      if (appTitleElem) appTitleElem.textContent = "YASL"; // Ensure title is reset
       renderUserLists();
     });
-    listsClose.addEventListener('click', () => {
-      listsPanel.style.display = 'none';
-      mainListView.style.display = '';
-    });
+  }
+
+  // When a list is selected, clear the flag so reload goes to the list
+  function clearShowListsPanelFlag() {
+    const user = auth.currentUser;
+    if (user) {
+      localStorage.removeItem('yasl-show-lists-panel-' + user.uid);
+    }
   }
 });
 
@@ -479,6 +541,10 @@ function subscribeToList(docRef) {
   if (unsubscribeSnapshot) unsubscribeSnapshot();
   unsubscribeSnapshot = docRef.onSnapshot(doc => {
     const data = doc.data();
+    // Set the title to the list name if available, else fallback to "YASL"
+    if (appTitleElem) {
+      appTitleElem.textContent = (data && data.name) ? data.name : 'YASL';
+    }
     if (data && Array.isArray(data.list)) {
       renderList(data.list);
     } else {
@@ -486,3 +552,46 @@ function subscribeToList(docRef) {
     }
   });
 }
+
+// On initial load after auth, try to restore last list
+auth.onAuthStateChanged(async user => {
+  setUIForUser(user);
+  const listsBtn = document.getElementById('lists-btn');
+  if (listsBtn) {
+    listsBtn.style.display = user ? '' : 'none';
+  }
+  const mainListView = document.getElementById('main-list-view');
+  const listsPanel = document.getElementById('lists-panel');
+  if (user) {
+    const lastListId = getLastListId();
+    // Check if user explicitly wants to see lists-panel (flag in localStorage)
+    const showListsPanel = localStorage.getItem('yasl-show-lists-panel-' + user.uid) === '1';
+    if (showListsPanel) {
+      if (mainListView) mainListView.style.display = 'none';
+      if (listsPanel) listsPanel.style.display = 'block';
+      renderUserLists();
+      return;
+    }
+    if (lastListId) {
+      currentListDocRef = db.collection('stringList').doc(lastListId);
+      if (mainListView) mainListView.style.display = 'none';
+      if (listsPanel) listsPanel.style.display = 'none';
+      const doc = await currentListDocRef.get();
+      if (doc.exists) {
+        if (mainListView) mainListView.style.display = '';
+        if (listsPanel) listsPanel.style.display = 'none';
+        subscribeToList(currentListDocRef);
+      } else {
+        if (mainListView) mainListView.style.display = 'none';
+        if (listsPanel) listsPanel.style.display = 'block';
+        renderUserLists();
+      }
+    } else {
+      if (mainListView) mainListView.style.display = 'none';
+      if (listsPanel) listsPanel.style.display = 'block';
+      renderUserLists();
+    }
+  } else {
+    currentListDocRef = db.collection('stringList').doc('sharedList');
+  }
+});
