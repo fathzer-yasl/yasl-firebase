@@ -127,7 +127,6 @@ form button[type="submit"]:hover {
   background: #e3f0fd;
 }
 
-
 /* Flash (urgent) button styles */
 .flash-btn {
   vertical-align: middle;
@@ -181,10 +180,24 @@ form button[type="submit"]:hover {
 }
 #settings-user-info {
   display: flex;
-  align-items: center;
-  gap: 0.5em;
-  margin-bottom: 0; /* Remove extra margin so it aligns vertically */
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1em;
+  margin-bottom: 0;
   font-size: 0.95em;
+  min-width: 0;
+}
+#user-name {
+  font-size: 1em;
+  color: inherit;
+  line-height: 1.2;
+  word-break: break-word;
+}
+#user-email {
+  font-size: 0.90em;
+  color: #666;
+  line-height: 1.2;
+  word-break: break-all;
 }
 #settings-user-info span {
   font-size: 0.95em;
@@ -244,4 +257,110 @@ form button[type="submit"]:hover {
 }
 #remove-confirm-btn:hover {
   background: #a31f1f;
+}
+
+.lists-btn {
+  margin-right: 0.5em;
+}
+
+.lists-title {
+  font-weight:bold;
+  margin-bottom:0.3em;
+}
+
+.user-list-row {
+  width: 100%;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  margin-bottom: 0.7em;
+  padding: 0.4em 0.7em;
+  background: #eee;
+  overflow: hidden; /* Ajouté pour éviter tout débordement */
+}
+
+.user-list-row > div {
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+  box-sizing: border-box;
+  width: auto;
+  max-width: 100%;
+}
+
+.user-list-row > div:nth-child(2) {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  flex: 1 1 0;
+  box-sizing: border-box;
+  /* Prevent overflow */
+  min-width: 0;
+  max-width: 100%;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.user-list-row > div:first-child {
+  margin-top: 0.1em;
+}
+
+.user-list-row > div:last-child {
+  margin-bottom: 0.1em;
+}
+
+.user-list-row div:first-child span {
+  font-size: 1.08em;
+  font-weight: 500;
+}
+
+.user-list-row .progress-bar-container {
+  flex: 1 1 0;
+  height: 1.1em;
+  background: #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-right: 0;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.user-list-row .progress-bar {
+  height: 100%;
+  background: #43a047;
+  transition: width 0.3s;
+}
+
+.user-list-row > div:nth-child(2) span {
+  margin-left: 1em;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  /* This ensures the span is always at the far right */
+}
+
+/* Remove extra margin/padding from lists-panel's intermediate modal-content if you move its content up */
+#lists-panel > .settings-modal-content {
+  padding: 0;
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* If you move the content up, ensure #user-lists-container fills width */
+#user-lists-container {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Add margin around user-list-separator */
+#user-lists-separator {
+  margin: 2em 1em 1.5em 1em;
+}
+
+/* Hide lists panel when not logged in */
+body.not-logged-in #lists-panel {
+  display: none !important;
 }
