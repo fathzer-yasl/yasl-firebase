@@ -332,6 +332,7 @@ form button[type="submit"]:hover {
 }
 
 .user-list-row > div:nth-child(2) span {
+  cursor: default;
   margin-left: 1em;
   white-space: nowrap;
   flex: 0 0 auto;
