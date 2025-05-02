@@ -5,15 +5,15 @@ A simple JavaScript web app that stores a shopping list in Firestore and updates
 ## Features
 
 - Google account authentication.
-- Add/remove items to a shared list.
-- Check/uncheck items
+- Create multiple lists of items.
+- Add/remove items to lists.
+- Check/uncheck items.
 - Mark items as urgent.
-- All changes sync instantly across all open, signed-in instances.
+- All changes to items list are synchronized instantly across all open, signed-in instances.
 
 ## Limitations
 
-- Only one list is managed.
-- Every logged user can read and modify the list.
+- Sharing, renaming and deleteing lists requires to manually edit the database.
 
 ## Setup Instructions
 
