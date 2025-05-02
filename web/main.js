@@ -18,6 +18,7 @@ const settingsClose = document.getElementById('settings-close');
 const userInfo = document.getElementById('settings-user-info');
 const userName = document.getElementById('user-name');
 const userEmail = document.getElementById('user-email');
+const itemsListElem = document.getElementById('main-list-view');
 const stringListElem = document.getElementById('string-list');
 const addForm = document.getElementById('add-form');
 const addItemInput = document.getElementById('add-item');
@@ -181,11 +182,16 @@ function renderListItem(item, parentElem, items) {
 
 // Show/hide UI and handle Firestore subscription based on auth state
 function setUIForUser(user) {
+  const listsPanel = document.getElementById('lists-panel');
+  if (listsPanel) listsPanel.style.display = 'none';
+  itemsListElem.style.display = 'none';
   if (user) {
     signInBtn.style.display = 'none'; // Hide sign-in button
     addForm.style.display = '';
     stringListElem.style.display = '';
     signOutBtn.style.display = ''; // Show sign-out button
+    // Show lists panel only if it was previously visible
+    // (do not force show here, just don't hide)
     // Subscribe to Firestore updates for the current list
     if (currentListDocRef) {
       subscribeToList(currentListDocRef);
@@ -206,6 +212,8 @@ function setUIForUser(user) {
     }
     // Reset to default list on sign out
     currentListDocRef = db.collection('stringList').doc('sharedList');
+    // Hide lists panel when not logged in
+
   }
 }
 
@@ -380,9 +388,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const sharedListsDiv = document.getElementById('user-shared-lists');
     const ownedSection = document.getElementById('user-owned-lists-section');
     const sharedSection = document.getElementById('user-shared-lists-section');
+    const separator = document.getElementById('user-lists-separator');
+    const userListsContainer = document.getElementById('user-lists-container');
     if (!ownedListsDiv || !sharedListsDiv || !ownedSection || !sharedSection) return;
+    userListsContainer.style.display = 'none';
+    if (appTitleElem) appTitleElem.textContent = "YASL";
+
     ownedListsDiv.innerHTML = '';
     sharedListsDiv.innerHTML = '';
+    separator.style.display = 'none';
     let hasOwned = false, hasShared = false;
     let foundListToSelect = false;
     const user = auth.currentUser;
@@ -412,38 +426,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const guestsArr = Array.isArray(data.guests) ? data.guests : [];
       const isOwner = usersArr.includes(user.email);
       const isGuest = !isOwner && guestsArr.includes(user.email);
+
+      // --- Begin new list rendering ---
       const div = document.createElement('div');
       div.className = 'user-list-row';
       div.style.display = 'flex';
-      div.style.alignItems = 'center';
-      div.style.justifyContent = 'space-between';
+      div.style.flexDirection = 'column';
       div.style.padding = '0.3em 0';
-      const nameSpan = document.createElement('span');
-      nameSpan.textContent = data.name || doc.id;
-      nameSpan.style.cursor = 'pointer';
-      nameSpan.style.color = '#1976d2';
-      nameSpan.style.textDecoration = 'underline';
-      nameSpan.onclick = () => {
-        listsPanel.style.display = 'none';
-        mainListView.style.display = '';
-        currentListDocRef = db.collection('stringList').doc(doc.id);
-        setLastListId(doc.id);
-        clearShowListsPanelFlag();
-        subscribeToList(currentListDocRef);
-      };
-      // Progress: unchecked/total
-      let unchecked = 0, total = 0;
-      if (Array.isArray(data.list)) {
-        total = data.list.length;
-        unchecked = data.list.filter(item => !item.checked).length;
-      }
-      const progressSpan = document.createElement('span');
-      progressSpan.textContent = `${unchecked} / ${total}`;
-      progressSpan.style.color = '#1976d2';
-      progressSpan.style.fontSize = '0.97em';
-      progressSpan.style.marginLeft = '1em';
-      div.appendChild(nameSpan);
-      div.appendChild(progressSpan);
+
+      // First line: list name
+      const { nameLine, nameSpan } = buildListFirstLine();
+      // Second line: progress bar (left, fills space) + progress text (right)
+      const secondLine = buildListProgress();
+      div.appendChild(nameLine);
+      div.appendChild(secondLine);
+      // --- End new list rendering ---
+
       if (isOwner) {
         hasOwned = true;
         ownedListsDiv.appendChild(div);
@@ -458,6 +456,70 @@ document.addEventListener('DOMContentLoaded', () => {
           nameSpan.click();
         }, 0);
       }
+
+      function buildListFirstLine() {
+        const nameLine = document.createElement('div');
+        nameLine.style.display = 'flex';
+        nameLine.style.alignItems = 'center';
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = data.name || doc.id;
+        nameSpan.style.cursor = 'pointer';
+        nameSpan.style.color = '#1976d2';
+        nameSpan.style.textDecoration = 'underline';
+        nameSpan.onclick = () => {
+          listsPanel.style.display = 'none';
+          mainListView.style.display = '';
+          currentListDocRef = db.collection('stringList').doc(doc.id);
+          setLastListId(doc.id);
+          clearShowListsPanelFlag();
+          subscribeToList(currentListDocRef);
+        };
+        nameLine.appendChild(nameSpan);
+        return { nameLine, nameSpan };
+      }
+
+      function buildListProgress() {
+        const secondLine = document.createElement('div');
+        secondLine.style.display = 'flex';
+        secondLine.style.alignItems = 'center';
+        secondLine.style.marginTop = '0.1em';
+
+        // Progress calculation
+        let checked = 0, total = 0;
+        if (Array.isArray(data.list)) {
+          total = data.list.length;
+          checked = data.list.filter(item => item.checked).length;
+        }
+        const percent = total > 0 ? Math.round((checked / total) * 100) : 0;
+
+        // Progress bar (fills remaining space)
+        const progressBarContainer = document.createElement('div');
+        progressBarContainer.style.flex = '1';
+        progressBarContainer.style.height = '0.7em';
+        progressBarContainer.style.background = '#e0e0e0';
+        progressBarContainer.style.borderRadius = '6px';
+        progressBarContainer.style.overflow = 'hidden';
+        progressBarContainer.style.marginRight = '0.7em';
+
+        const progressBar = document.createElement('div');
+        progressBar.style.height = '100%';
+        progressBar.style.width = percent + '%';
+        progressBar.style.background = '#43a047';
+        progressBar.style.transition = 'width 0.3s';
+        progressBarContainer.appendChild(progressBar);
+
+        // Progress text (right)
+        const progressSpan = document.createElement('span');
+        progressSpan.textContent = `${checked} / ${total}`;
+        progressSpan.style.color = '#1976d2';
+        progressSpan.style.fontSize = '0.97em';
+        progressSpan.style.marginLeft = 'auto';
+        progressSpan.style.whiteSpace = 'nowrap';
+
+        secondLine.appendChild(progressBarContainer);
+        secondLine.appendChild(progressSpan);
+        return secondLine;
+      }
     });
     ownedSection.style.display = hasOwned ? '' : 'none';
     sharedSection.style.display = hasShared ? '' : 'none';
@@ -466,18 +528,23 @@ document.addEventListener('DOMContentLoaded', () => {
       ownedSection.style.display = '';
       sharedSection.style.display = 'none';
     }
+    if (hasOwned && hasShared) {
+      separator.style.display = 'block';
+    }
     // If selectListId was provided but not found, show lists panel
     if (selectListId && !foundListToSelect) {
       listsPanel.style.display = 'block';
       mainListView.style.display = 'none';
     }
-    // Set app title to "YASL" when showing lists panel
-    if (appTitleElem) appTitleElem.textContent = "YASL";
+    userListsContainer.style.display = 'block';
   };
 
-  // Add new list
-  if (addListBtn && newListNameInput) {
-    addListBtn.onclick = async () => {
+  // Add new list (fix: use form submit event)
+  // Find the add-list form inside lists-panel
+  const addListForm = listsPanel ? listsPanel.querySelector('form#add-form') : null;
+  if (addListForm && newListNameInput) {
+    addListForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
       const user = auth.currentUser;
       const name = newListNameInput.value.trim();
       if (!user || !name) return;
@@ -485,12 +552,18 @@ document.addEventListener('DOMContentLoaded', () => {
       const docRef = await db.collection('stringList').add({
         name,
         users: [user.email],
+        guests: [],
         list: []
       });
       newListNameInput.value = '';
       setLastListId(docRef.id);
       renderUserLists(docRef.id);
-    };
+    });
+  }
+
+  // Remove the old onclick handler for addListBtn if present
+  if (addListBtn) {
+    addListBtn.onclick = null;
   }
 
   if (listsBtn && listsPanel && mainListView) {

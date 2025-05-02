@@ -55,4 +55,7 @@ input[type="text"]::placeholder {
   background: #23272a;
 }
 
+.user-list-row {
+  background: #111;
+}
 

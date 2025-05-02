@@ -34,18 +34,6 @@
         </button>
       </div>
     </div>
-    <div id="main-list-view">
-      <form id="add-form">
-        <input type="text" id="add-item" placeholder="Add an item..." required />
-        <button type="submit" aria-label="Add">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle">
-            <rect x="9" y="4" width="2" height="12" fill="#1976d2"/>
-            <rect x="4" y="9" width="12" height="2" fill="#1976d2"/>
-          </svg>
-        </button>
-      </form>
-      <ul id="string-list"></ul>
-    </div>
     <div id="auth-section">
       <button id="sign-in-btn" class="text-btn">Sign in with Google</button>
     </div>
@@ -75,31 +63,42 @@
     </div>
     <!-- Lists Panel (non-modal, replaces main-list-view) -->
     <div id="lists-panel" style="display:none;">
-      <div class="settings-modal-content" style="min-width:260px;max-width:95vw;">
-        <div style="height:1.5em;"></div>
-        <div style="display:flex;align-items:center;gap:0.5em;margin-bottom:1em;width:100%;">
-          <input type="text" id="new-list-name" placeholder="List name..." style="flex:1;" />
-          <button id="add-list-btn" aria-label="Add list" style="background:#fff;border:2px solid #1976d2;color:#1976d2;padding:0.5rem 1rem;border-radius:4px;transition:background 0.2s, color 0.2s;">
-            <!-- Same + icon as add-form -->
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle">
-              <rect x="9" y="4" width="2" height="12" fill="#1976d2"/>
-              <rect x="4" y="9" width="12" height="2" fill="#1976d2"/>
-            </svg>
-          </button>
+      <form id="add-form">
+        <input type="text" id="new-list-name" placeholder="List name..." style="flex:1;" />
+        <button id="add-list-btn" type="submit" aria-label="Add list">
+          <!-- Same + icon as add-form -->
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle">
+            <rect x="9" y="4" width="2" height="12" fill="#1976d2"/>
+            <rect x="4" y="9" width="12" height="2" fill="#1976d2"/>
+          </svg>
+        </button>
+      </form>
+      <div id="user-lists-container">
+        <div id="user-owned-lists-section">
+          <div class="lists-title">My lists</div>
+          <div id="user-owned-lists"></div>
         </div>
-        <div id="user-lists-container">
-          <div id="user-owned-lists-section">
-            <div style="font-weight:bold;margin-bottom:0.3em;">My lists</div>
-            <div id="user-owned-lists"></div>
-          </div>
-          <div id="user-shared-lists-section" style="margin-top:1.2em;">
-            <div style="font-weight:bold;margin-bottom:0.3em;">Shared with me</div>
-            <div id="user-shared-lists"></div>
-          </div>
+        <div id ="user-lists-separator">
+          <hr>
+        </div>
+        <div id="user-shared-lists-section" style="margin-top:1.2em;">
+          <div class="lists-title">Shared with me</div>
+          <div id="user-shared-lists"></div>
         </div>
       </div>
     </div>
-    <!-- Remove Item Modal -->
+    <div id="main-list-view">
+      <form id="add-form">
+        <input type="text" id="add-item" placeholder="Add an item..." required />
+        <button type="submit" aria-label="Add">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle">
+            <rect x="9" y="4" width="2" height="12" fill="#1976d2"/>
+            <rect x="4" y="9" width="12" height="2" fill="#1976d2"/>
+          </svg>
+        </button>
+      </form>
+      <ul id="string-list"></ul>
+    </div>
     <div id="remove-modal" class="settings-modal" style="display:none;">
       <div class="settings-modal-content" style="min-width:220px;max-width:90vw;">
         <div class="remove-modal-title">Remove this item?</div>
