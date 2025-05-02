@@ -259,7 +259,7 @@ form button[type="submit"]:hover {
   background: #a31f1f;
 }
 
-.lists-btn {
+#lists-btn {
   margin-right: 0.5em;
 }
 

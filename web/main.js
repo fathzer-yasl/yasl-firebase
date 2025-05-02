@@ -668,3 +668,15 @@ auth.onAuthStateChanged(async user => {
     currentListDocRef = db.collection('stringList').doc('sharedList');
   }
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+  var listsBtn = document.getElementById('lists-btn');
+  if (listsBtn) {
+    listsBtn.addEventListener('click', function() {
+      listsBtn.blur();
+    });
+    listsBtn.addEventListener('touchend', function() {
+      listsBtn.blur();
+    });
+  }
+});
