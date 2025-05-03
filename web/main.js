@@ -20,7 +20,8 @@ const userName = document.getElementById('user-name');
 const userEmail = document.getElementById('user-email');
 const itemsListElem = document.getElementById('main-list-view');
 const stringListElem = document.getElementById('string-list');
-const addForm = document.getElementById('add-form');
+const addItemForm = document.getElementById('add-item-form');
+const addListForm = document.getElementById('add-list-form');
 const addItemInput = document.getElementById('add-item');
 
 // Reference to the currently selected list document
@@ -187,7 +188,7 @@ function setUIForUser(user) {
   itemsListElem.style.display = 'none';
   if (user) {
     signInBtn.style.display = 'none'; // Hide sign-in button
-    addForm.style.display = '';
+    addItemForm.style.display = '';
     stringListElem.style.display = '';
     signOutBtn.style.display = ''; // Show sign-out button
     // Show lists panel only if it was previously visible
@@ -202,7 +203,7 @@ function setUIForUser(user) {
     signInBtn.style.display = 'inline-block'; // Use inline-block for button
     userName.textContent = '';
     userEmail.textContent = '';
-    addForm.style.display = 'none';
+    addItemForm.style.display = 'none';
     stringListElem.style.display = 'none';
     signOutBtn.style.display = 'none'; // Hide sign-out button
     renderList([]);
@@ -346,30 +347,32 @@ auth.onAuthStateChanged(user => {
 });
 
 // Add new item (only if signed in)
-addForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const user = auth.currentUser;
-  if (!user) {
-    alert('Please sign in first.');
-    return;
-  }
-  const newStr = addItemInput.value.trim();
-  if (!newStr) return;
-  await db.runTransaction(async (transaction) => {
-    const doc = await transaction.get(currentListDocRef);
-    let currentList = [];
-    if (doc.exists && Array.isArray(doc.data().list)) {
-      currentList = doc.data().list;
+if (addItemForm) {
+  addItemForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const user = auth.currentUser;
+    if (!user) {
+      alert('Please sign in first.');
+      return;
     }
-    // Add as an object with name/checked/urgent
-    const newItem = { name: newStr, checked: false, urgent: false };
-    transaction.set(currentListDocRef, { ...doc.data(), list: [...currentList, newItem] });
+    const newStr = addItemInput.value.trim();
+    if (!newStr) return;
+    await db.runTransaction(async (transaction) => {
+      const doc = await transaction.get(currentListDocRef);
+      let currentList = [];
+      if (doc.exists && Array.isArray(doc.data().list)) {
+        currentList = doc.data().list;
+      }
+      // Add as an object with name/checked/urgent
+      const newItem = { name: newStr, checked: false, urgent: false };
+      transaction.set(currentListDocRef, { ...doc.data(), list: [...currentList, newItem] });
+    });
+    addItemInput.value = ''; // Clear the input after submit
   });
-  addItemInput.value = ''; // Clear the input after submit
-});
+}
 
 // On load, hide add form and list until auth state is known
-addForm.style.display = 'none';
+if (addItemForm) addItemForm.style.display = 'none';
 stringListElem.style.display = 'none';
 userInfo.style.display = 'none';
 signOutBtn.style.display = 'none'; // Hide sign-out button initially
@@ -540,8 +543,6 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // Add new list (fix: use form submit event)
-  // Find the add-list form inside lists-panel
-  const addListForm = listsPanel ? listsPanel.querySelector('form#add-form') : null;
   if (addListForm && newListNameInput) {
     addListForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -666,17 +667,5 @@ auth.onAuthStateChanged(async user => {
     }
   } else {
     currentListDocRef = db.collection('stringList').doc('sharedList');
-  }
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-  var listsBtn = document.getElementById('lists-btn');
-  if (listsBtn) {
-    listsBtn.addEventListener('click', function() {
-      listsBtn.blur();
-    });
-    listsBtn.addEventListener('touchend', function() {
-      listsBtn.blur();
-    });
   }
 });
