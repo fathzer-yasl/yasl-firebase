@@ -16,7 +16,7 @@ body {
   font-size: 1.07em;
 }
 
-.top-bar {
+#top-bar {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -31,16 +31,12 @@ body {
   cursor: default;
 }
 
-.settings-btn {
+#top-bar button {
   background: none;
-  border: none;
   padding: 0.25em 0.5em;
-  transition: background 0.2s;
-  margin-left: 1em;
 }
-.settings-btn:hover {
-  background: #e3f0fd;
-  border-radius: 50%;
+#top-bar button:hover {
+  background: none;
 }
 
 ul#string-list {

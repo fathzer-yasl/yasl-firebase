@@ -566,7 +566,7 @@ document.addEventListener('DOMContentLoaded', () => {
     addListBtn.onclick = null;
   }
 
-  if (listsBtn && listsPanel && mainListView) {
+    if (listsBtn && listsPanel && mainListView) {
     listsBtn.addEventListener('click', () => {
       listsPanel.style.display = 'block';
       mainListView.style.display = 'none';
