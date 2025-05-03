@@ -566,7 +566,7 @@ document.addEventListener('DOMContentLoaded', () => {
     addListBtn.onclick = null;
   }
 
-  if (listsBtn && listsPanel && mainListView) {
+    if (listsBtn && listsPanel && mainListView) {
     listsBtn.addEventListener('click', () => {
       listsPanel.style.display = 'block';
       mainListView.style.display = 'none';
@@ -666,17 +666,5 @@ auth.onAuthStateChanged(async user => {
     }
   } else {
     currentListDocRef = db.collection('stringList').doc('sharedList');
-  }
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-  var listsBtn = document.getElementById('lists-btn');
-  if (listsBtn) {
-    listsBtn.addEventListener('click', function() {
-      listsBtn.blur();
-    });
-    listsBtn.addEventListener('touchend', function() {
-      listsBtn.blur();
-    });
   }
 });

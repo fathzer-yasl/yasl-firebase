@@ -34,6 +34,17 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "main_version=$MAIN_VERSION" >> $GITHUB_OUTPUT
 
+      - name: Create and push Git tag
+        if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch --tags
+          git tag ${{ steps.get_version.outputs.version }}
+          git push origin ${{ steps.get_version.outputs.version }}
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:

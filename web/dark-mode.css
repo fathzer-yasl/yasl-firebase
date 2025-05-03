@@ -6,12 +6,8 @@ body {
   background: #23272a;
   box-shadow: 0 2px 8px rgba(0,0,0,0.35);
 }
-.settings-btn {
-  background: none;
+#topbar button {
   color: #90caf9;
-}
-.settings-btn:hover {
-  background: #23272a;
 }
 .group-box {
   background: #24292e;
