@@ -1,5 +1,8 @@
 # Yet Another Shopping List
 
+**WARNING:** THE PROJECT IS TOTALLY RUINED BY USING VITE. No more ways to mount the firebaseConfig.js at runtime!!!
+All the changes in this branch should be reviewed and amended before being release!
+
 A simple JavaScript web app that stores a shopping list in Firestore and updates it in real time across all open instances without the help of a backend server.
 
 ## Features

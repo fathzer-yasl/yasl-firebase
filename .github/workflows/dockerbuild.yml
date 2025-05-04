@@ -1,5 +1,8 @@
 name: Build and Push Docker Image
 
+THE PROJECT IS TOTALLY RUINED BY USING VITE. No more ways to mount the firebaseConfig.js at runtime
+Another interesting change would be to not tag images built by pushing on docker-action branch
+
 on:
   push:
     branches:
