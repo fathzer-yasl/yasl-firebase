@@ -2,7 +2,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-  entry: './web/main.js',
+  entry: './web/js/main.js',
   output: {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'web/dist'),
@@ -26,5 +26,6 @@ module.exports = {
   devtool: 'source-map',
   resolve: {
     extensions: ['.js'],
+    modules: [path.resolve(__dirname, 'web/js'), 'node_modules'],
   },
 };

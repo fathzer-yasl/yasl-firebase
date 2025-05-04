@@ -9,6 +9,8 @@ export function setupItems() {
   const stringListElem = document.getElementById('string-list');
   const addItemForm = document.getElementById('add-item-form');
   const addItemInput = document.getElementById('add-item');
+  const appTitleElem = document.querySelector('.app-title');
+  const mainListView = document.getElementById('main-list-view');
 
   // Subscribe to list changes
   onListSelected((docRef) => {
@@ -19,10 +21,15 @@ export function setupItems() {
     currentListDocRef = docRef;
     if (!currentListDocRef) {
       renderList([]);
+      if (appTitleElem) appTitleElem.textContent = 'YASL';
       return;
     }
     unsubscribeSnapshot = currentListDocRef.onSnapshot(doc => {
       const data = doc.data();
+      // Set the app title to the list name if available
+      if (appTitleElem) {
+        appTitleElem.textContent = (data?.name) ? data.name : 'YASL';
+      }
       if (data && Array.isArray(data.list)) {
         renderList(data.list);
       } else {
@@ -31,7 +38,7 @@ export function setupItems() {
     });
   });
 
-  // Unsubscribe from snapshot on sign out to avoid permission-denied errors
+  // Unsubscribe from snapshot on sign out or when main-list-view is hidden
   const auth = getAuth();
   if (auth) {
     auth.onAuthStateChanged(user => {
@@ -39,8 +46,19 @@ export function setupItems() {
         unsubscribeSnapshot();
         unsubscribeSnapshot = null;
         renderList([]);
+        if (appTitleElem) appTitleElem.textContent = 'YASL';
       }
     });
+  }
+
+  // Observe visibility changes to main-list-view only
+  const observer = new MutationObserver(() => {
+    if (mainListView && mainListView.style.display === 'none') {
+      if (appTitleElem) appTitleElem.textContent = 'YASL';
+    }
+  });
+  if (mainListView) {
+    observer.observe(mainListView, { attributes: true, attributeFilter: ['style'] });
   }
 
   // Add item form handler
