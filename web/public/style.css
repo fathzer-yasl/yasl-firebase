@@ -91,7 +91,7 @@ form {
   padding-right: 0;
   /* Ensures form aligns with string-list */
 }
-input[type="text"] {
+form input[type="text"] {
   flex: 1;
   padding: 0.5rem;
   border: 1px solid #ccc;

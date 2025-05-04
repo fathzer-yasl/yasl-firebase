@@ -127,3 +127,72 @@ docker run -d -p 8080:8080 \
 ```sh
 docker build -t fathzer/yasl -f docker/Dockerfile .
 ```
+
+### How to run the web app bundle?
+For now, it does work at all!
+
+## How to build a distribution package (with Vite)
+
+To build a production-ready distribution package in the `dist` folder using [Vite](https://vitejs.dev/):
+
+1. **Install Node.js and npm**  
+   Make sure you have [Node.js](https://nodejs.org/) and npm installed.
+
+2. **Install Vite**  
+   In your project root, run:
+   ```sh
+   npm install --save-dev vite
+   ```
+
+3. **Add build scripts**  
+   In your `package.json`, add:
+   ```json
+   "scripts": {
+     "dev": "vite",
+     "build": "vite build"
+   }
+   ```
+
+4. **Build the package**  
+   Run:
+   ```sh
+   npm run build
+   ```
+   This will generate the `dist` folder containing all necessary files (JS bundle, CSS, HTML, etc.).
+
+5. **Serve or deploy the contents of `dist`**  
+   You can use any static web server to serve the files in `dist`.
+
+**Note:**  
+- All static assets (CSS, images, favicon, etc.) are copied as-is by Vite.
+- The output will match your source structure and behavior.
+
+## How to run the app during development
+
+To run the app with hot reload and a local development server using Vite:
+
+1. **Install dependencies**  
+   You only need to run:
+   ```sh
+   npm install
+   ```
+   **once** after cloning the repository or when dependencies in `package.json` change.  
+   You do **not** need to run `npm install` every time you edit your code.
+
+2. **Start the Vite development server**  
+   In your project root, run:
+   ```sh
+   npm run dev
+   ```
+   This will start a local server (by default at [http://localhost:8080](http://localhost:8080)).
+
+3. **Open the app in your browser**  
+   Go to [http://localhost:8080](http://localhost:8080).
+
+- Any changes you make to your source files (JS, HTML, CSS, etc.) will be reflected immediately in the browser (hot reload).
+- Make sure your `firebaseConfig.js` is present in the correct location as described above.
+
+**Note:**  
+- The development server serves files from the `web` directory and static assets from `web/public`.
+- Do **not** open `index.html` directly from the filesystem; always use the Vite dev server for development.
+- Only run `npm install` again if you add/remove dependencies in `package.json` or after a fresh clone.
