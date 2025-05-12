@@ -1,8 +1,5 @@
 # Yet Another Shopping List
 
-**WARNING:** THE PROJECT IS TOTALLY RUINED BY USING VITE. No more ways to mount the firebaseConfig.js at runtime!!!
-All the changes in this branch should be reviewed and amended before being release!
-
 A simple JavaScript web app that stores a shopping list in Firestore and updates it in real time across all open instances without the help of a backend server.
 
 ## Features
@@ -78,63 +75,48 @@ Go to **Firestore database**, then **Rules** and set:
         }
       }
      ```
+     
+### Notes
+
+- For production, set proper Firestore security rules and restrict authentication as needed.
 
 ## Run instructions
 
 ### Run with Docker
 
+This is clearly the easiest way to run the app.
+
 Assuming your `firebaseConfig.js` is in your home directory:
 
 ```sh
 docker run -d -p 8080:8080 \
-  -v $(HOME)/firebaseConfig.js:/usr/share/nginx/html/firebaseConfig.js:ro \
+  -v $(HOME)/firebaseConfig.js:/usr/share/nginx/html/config/firebaseConfig.js:ro \
   fathzer/yasl
 ```
 
 - The app will be available at [http://localhost:8080](http://localhost:8080)
 
-### Run locally
+### Run the distribution package locally.
 
 1. Set up Firebase config
-   - Open (or create if it does not exist) the file `web/firebaseConfig.js` in your project folder.
+   - Open (or create if it does not exist) the file `web/public/config/firebaseConfig.js` in your project folder.
    - **Paste your copied config object into `firebaseConfig.js`, replacing the existing one if present.**
    - Save the file.
+   
+2. [Build the distribution package](#how-to-build-a-distribution-package-with-vite).
 
-2. **Run the App (Important: Use a Local Server!):**
+3. **Run the App (Important: Use a Local Server!):**
    - Google authentication requires the app to be served over `http://` or `https://` (not `file://`).
    - **To start a local server with Python:**
      - Open a terminal in your project directory.
-     - Run:
-       - For Python 3:
-         ```
-         python -m http.server 8080
-         ```
-       - For Python 2:
-         ```
-         python -m SimpleHTTPServer 8080
-         ```
-     - Open your browser and go to [http://localhost:8080](http://localhost:8080)
+     - Run (for Python 3):
+        ```
+        python -m http.server 8080
+        ```
+    - Open your browser and go to [http://localhost:8080](http://localhost:8080)
 
-## Use it
 
-1. **Sign in with Google** and log in.
-2. **Add items to the list**. All signed-in users will see real-time updates.
-3. **Enjoy!**
-
-## Notes
-
-- For production, set proper Firestore security rules and restrict authentication as needed.
-
-### How to build the Docker image
-
-```sh
-docker build -t fathzer/yasl -f docker/Dockerfile .
-```
-
-### How to run the web app bundle?
-For now, it does work at all!
-
-## How to build a distribution package (with Vite)
+## How to build the distribution package (with Vite)
 
 To build a production-ready distribution package in the `dist` folder using [Vite](https://vitejs.dev/):
 
@@ -170,6 +152,15 @@ To build a production-ready distribution package in the `dist` folder using [Vit
 - All static assets (CSS, images, favicon, etc.) are copied as-is by Vite.
 - The output will match your source structure and behavior.
 
+### How to build the Docker image
+
+First [build the distribution package](#how-to-build-the-distribution-package-with-vite).
+
+Then:
+```sh
+docker build -t fathzer/yasl -f docker/Dockerfile .
+```
+
 ## How to run the app during development
 
 To run the app with hot reload and a local development server using Vite:
@@ -199,3 +190,11 @@ To run the app with hot reload and a local development server using Vite:
 - The development server serves files from the `web` directory and static assets from `web/public`.
 - Do **not** open `index.html` directly from the filesystem; always use the Vite dev server for development.
 - Only run `npm install` again if you add/remove dependencies in `package.json` or after a fresh clone.
+
+
+## Use it
+
+1. **Sign in with Google** and log in.
+2. **Create a list**.
+2. **Add items to the list**. All signed-in users will see real-time updates.
+3. **Enjoy!**
