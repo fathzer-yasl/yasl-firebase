@@ -39,7 +39,7 @@ body {
   background: none;
 }
 
-ul#string-list {
+ul#item-list {
   list-style: none;
   padding-left: 0;
   padding-right: 0;
@@ -50,10 +50,10 @@ ul#string-list {
   /* Ensures list aligns with add-form */
 }
 
-ul#string-list span {
+ul#item-list span {
   cursor: default;
 }
-ul#string-list input[type="checkbox"] {
+ul#item-list input[type="checkbox"] {
   cursor: pointer;
 }
 
@@ -89,7 +89,7 @@ form {
   margin-right: 0;
   padding-left: 0;
   padding-right: 0;
-  /* Ensures form aligns with string-list */
+  /* Ensures form aligns with item-list */
 }
 form input[type="text"] {
   flex: 1;

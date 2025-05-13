@@ -2,6 +2,7 @@ import { getAuth, getFirestore } from './auth.js';
 
 let currentListDocRef = null;
 let unsubscribeSnapshot = null;
+let checkedGroupCollapsed = false;
 
 // Expose a global function to clear currentListDocRef and unsubscribe
 window.clearCurrentListDocRef = function() {
@@ -16,7 +17,7 @@ window.clearCurrentListDocRef = function() {
 
 export function setupItems(appState) {
   const db = getFirestore();
-  const stringListElem = document.getElementById('string-list');
+  const stringListElem = document.getElementById('item-list');
   const addItemForm = document.getElementById('add-item-form');
   const addItemInput = document.getElementById('add-item');
   const appTitleElem = document.querySelector('.app-title');
@@ -130,8 +131,8 @@ export function setupItems(appState) {
     checkedHeader.style.gap = '0.5em';
     checkedHeader.style.margin = '1em 0 0.2em 0';
     // Collapse/expand icon
-    let checkedGroupCollapsed = false;
     const toggleBtn = document.createElement('button');
+    toggleBtn.setAttribute('id', 'toggle-checked');
     toggleBtn.setAttribute('aria-label', checkedGroupCollapsed ? 'Expand completed' : 'Collapse completed');
     toggleBtn.style.padding = '0 0.25em';
     toggleBtn.innerHTML = checkedGroupCollapsed
