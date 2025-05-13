@@ -36,6 +36,13 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "main_version=$MAIN_VERSION" >> $GITHUB_OUTPUT
 
+      # --- Build the distribution using Vite ---
+      - name: Install dependencies and build with Vite
+        run: |
+          npm install
+          npm run build
+        working-directory: ./web
+
       - name: Create and push Git tag
         if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
         env:
@@ -48,6 +55,16 @@ jobs:
           git push origin ${{ steps.get_version.outputs.version }}
 
       - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/yasl:${{ steps.get_version.outputs.version }}
+        if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+      - name: Add extra tags for merged PR to main
+        if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
         uses: docker/build-push-action@v5
         with:
           context: .
