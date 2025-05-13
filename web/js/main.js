@@ -1,64 +1,64 @@
-import { setupAuth } from './auth.js';
+import { setupAuth, ready as authReady } from './auth.js';
 import { setupLists } from './lists.js';
 import { setupItems } from './items.js';
 import { setupSettings } from './settings.js';
+import { AppState } from './app-state.js';
 
 if (!firebase.apps.length) {
   firebase.initializeApp(window.firebaseConfig);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  setupAuth();
-  setupSettings();
-  setupLists();
-  setupItems();
+document.addEventListener('DOMContentLoaded', async () => {
+  // Hide both panels initially
+  const listsPanel = document.getElementById('lists-panel');
+  const mainListView = document.getElementById('main-list-view');
+  const listsBtn = document.getElementById('lists-btn');
+  listsPanel.style.display = 'none';
+  mainListView.style.display = 'none';
 
-  // After login, restore last selected list
-  const auth = firebase.auth();
-  auth.onAuthStateChanged(user => {
+  const appState = new AppState();
+  setupAuth(appState); // Pass appState here
+  setupSettings();
+  await authReady;
+  setupLists(appState);
+  setupItems(appState);
+
+  // Listen to state changes and show/hide panels
+  appState.addEventListener('listref-changed', (e) => {
+    const listRef = e.detail.listRef;
+    if (listRef) {
+      mainListView.style.display = '';
+      listsPanel.style.display = 'none';
+      listsBtn.style.display = '';
+    } else {
+      mainListView.style.display = 'none';
+      listsBtn.style.display = 'none';
+      if (appState.signedIn) listsPanel.style.display = '';
+    }
+  });
+
+  // Listen to auth state changes to hide lists-panel on sign out
+  appState.addEventListener('auth-changed', (e) => {
+    const user = e.detail.user;
     if (user) {
       const lastListId = localStorage.getItem('yasl-last-list-' + user.uid);
       if (lastListId) {
         window.renderUserLists(lastListId);
+        listsPanel.style.display = 'none';
+        mainListView.style.display = '';
       } else {
         window.renderUserLists();
+        listsPanel.style.display = '';
+        mainListView.style.display = 'none';
       }
+    } else {
+      listsPanel.style.display = 'none';
+      mainListView.style.display = 'none';
+      listsBtn.style.display = 'none';
     }
   });
 });
 
-// Hide lists-btn when lists-panel is visible (and main-list-view is hidden)
-function setupListsBtnVisibility() {
-  const listsBtn = document.getElementById('lists-btn');
-  const listsPanel = document.getElementById('lists-panel');
-  const mainListView = document.getElementById('main-list-view');
-  if (!listsBtn || !listsPanel || !mainListView) return;
-
-  function updateListsBtnVisibility() {
-    const user = firebase.auth().currentUser;
-    if (!user) {
-      listsBtn.style.display = 'none';
-      return;
-    }
-    if (listsPanel.style.display !== 'none' && mainListView.style.display === 'none') {
-      listsBtn.style.display = 'none';
-    } else {
-      listsBtn.style.display = '';
-    }
-  }
-
-  const observer = new MutationObserver(updateListsBtnVisibility);
-  observer.observe(listsPanel, { attributes: true, attributeFilter: ['style'] });
-  observer.observe(mainListView, { attributes: true, attributeFilter: ['style'] });
-
-  // Listen for auth state changes to hide/show button
-  firebase.auth().onAuthStateChanged(updateListsBtnVisibility);
-
-  updateListsBtnVisibility();
-}
-
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', setupListsBtnVisibility);
-} else {
-  setupListsBtnVisibility();
 }

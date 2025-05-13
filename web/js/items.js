@@ -1,10 +1,20 @@
 import { getAuth, getFirestore } from './auth.js';
-import { onListSelected } from './lists.js';
 
 let currentListDocRef = null;
 let unsubscribeSnapshot = null;
 
-export function setupItems() {
+// Expose a global function to clear currentListDocRef and unsubscribe
+window.clearCurrentListDocRef = function() {
+  if (unsubscribeSnapshot) {
+    unsubscribeSnapshot();
+    unsubscribeSnapshot = null;
+  }
+  currentListDocRef = null;
+  const appTitleElem = document.querySelector('.app-title');
+  if (appTitleElem) appTitleElem.textContent = 'YASL';
+};
+
+export function setupItems(appState) {
   const db = getFirestore();
   const stringListElem = document.getElementById('string-list');
   const addItemForm = document.getElementById('add-item-form');
@@ -12,18 +22,20 @@ export function setupItems() {
   const appTitleElem = document.querySelector('.app-title');
   const mainListView = document.getElementById('main-list-view');
 
-  // Subscribe to list changes
-  onListSelected((docRef) => {
+  // Listen to AppState for list selection
+  appState.addEventListener('listref-changed', (e) => {
+    const docRef = e.detail.listRef;
     if (unsubscribeSnapshot) {
       unsubscribeSnapshot();
       unsubscribeSnapshot = null;
     }
     currentListDocRef = docRef;
     if (!currentListDocRef) {
-      renderList([]);
       if (appTitleElem) appTitleElem.textContent = 'YASL';
+      if (mainListView) mainListView.style.display = 'none'; // Hide the whole items panel
       return;
     }
+    if (mainListView) mainListView.style.display = ''; // Show the whole items panel
     unsubscribeSnapshot = currentListDocRef.onSnapshot(doc => {
       const data = doc.data();
       // Set the app title to the list name if available
@@ -32,8 +44,8 @@ export function setupItems() {
       }
       if (data && Array.isArray(data.list)) {
         renderList(data.list);
-      } else {
-        renderList([]);
+      } else if (stringListElem) {
+        stringListElem.innerHTML = '';
       }
     });
   });
@@ -45,7 +57,8 @@ export function setupItems() {
       if (!user && unsubscribeSnapshot) {
         unsubscribeSnapshot();
         unsubscribeSnapshot = null;
-        renderList([]);
+        currentListDocRef = null;
+        // Do not call renderList([]); let the main app show the lists-panel
         if (appTitleElem) appTitleElem.textContent = 'YASL';
       }
     });

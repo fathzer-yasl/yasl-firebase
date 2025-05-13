@@ -3,6 +3,9 @@ let auth = null;
 let provider = null;
 let db = null;
 
+let readyResolve;
+export const ready = new Promise(resolve => { readyResolve = resolve; });
+
 export function getAuth() {
   return auth;
 }
@@ -32,7 +35,7 @@ function loadFirebaseConfig() {
   });
 }
 
-export async function setupAuth() {
+export async function setupAuth(appState) {
   const firebaseConfig = await loadFirebaseConfig();
   if (!firebase.apps.length) {
     app = firebase.initializeApp(firebaseConfig);
@@ -45,6 +48,8 @@ export async function setupAuth() {
 
   const signInBtn = document.getElementById('sign-in-btn');
   const signOutBtn = document.getElementById('sign-out-btn');
+  const userNameElem = document.getElementById('user-name');
+  const userEmailElem = document.getElementById('user-email');
 
   signInBtn?.addEventListener('click', () => {
     auth.signInWithPopup(provider).catch(err => {
@@ -55,20 +60,26 @@ export async function setupAuth() {
     auth.signOut();
   });
 
-  // Add UI show/hide logic for main-list-view and sign-in button
-  const mainListView = document.getElementById('main-list-view');
-  const listsBtn = document.getElementById('lists-btn'); // <-- add this line
   if (auth) {
     auth.onAuthStateChanged(user => {
       if (user) {
-        if (mainListView) mainListView.style.display = '';
         if (signInBtn) signInBtn.style.display = 'none';
-        if (listsBtn) listsBtn.style.display = ''; // <-- show lists-btn when signed in
+        if (signOutBtn) signOutBtn.style.display = 'inline-block';
+        if (userNameElem) userNameElem.textContent = user.displayName || '';
+        if (userEmailElem) userEmailElem.textContent = user.email || '';
+        if (appState) appState.setUser(user);
       } else {
-        if (mainListView) mainListView.style.display = 'none';
         if (signInBtn) signInBtn.style.display = 'inline-block';
-        if (listsBtn) listsBtn.style.display = 'none'; // <-- hide lists-btn when signed out
+        if (signOutBtn) signOutBtn.style.display = 'none';
+        if (userNameElem) userNameElem.textContent = '';
+        if (userEmailElem) userEmailElem.textContent = '';
+        if (appState) {
+          appState.setUser(null);
+          appState.clearListRef(); // Ensure no list is selected on sign out
+        }
       }
     });
   }
+
+  if (readyResolve) readyResolve();
 }

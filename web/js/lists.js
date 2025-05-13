@@ -1,4 +1,4 @@
-import { getAuth, getFirestore } from './auth.js';
+import { getFirestore } from './auth.js';
 
 let onListSelectedCallback = null;
 
@@ -16,7 +16,7 @@ export function selectListById(listId) {
   }
 }
 
-export function setupLists() {
+export function setupLists(appState) {
   const appTitleElem = document.querySelector('.app-title');
 
   window.renderUserLists = async function(selectListId = null) {
@@ -38,8 +38,8 @@ export function setupLists() {
     separator.style.display = 'none';
     let hasOwned = false, hasShared = false;
     let foundListToSelect = false;
-    const auth = getAuth();
-    const user = auth.currentUser;
+
+    const user = appState.user;
     if (!user) return;
 
     // Query lists where user is in 'users' or in 'guests'
@@ -113,10 +113,11 @@ export function setupLists() {
           mainListView.style.display = '';
           const docRef = db.collection('stringList').doc(doc.id);
           setLastListId(doc.id);
-          clearShowListsPanelFlag();
+		  //TODO This piece of code is quite strange to me
           if (typeof onListSelectedCallback === 'function') {
             onListSelectedCallback(docRef);
           }
+          onListSelected(docRef);
         };
         nameLine.appendChild(nameSpan);
         return { nameLine, nameSpan };
@@ -196,16 +197,14 @@ export function setupLists() {
   if (addListForm && newListNameInput) {
     addListForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const auth = getAuth();
-      const user = auth.currentUser;
       const name = newListNameInput.value.trim();
-      if (!user || !name) return;
+      if (!appState.user || !name) return;
       const db = getFirestore();
       if (!db) return;
       // Create a new document with a generated id
       const docRef = await db.collection('stringList').add({
         name,
-        users: [user.email],
+        users: [appState.user.email],
         guests: [],
         list: []
       });
@@ -224,42 +223,33 @@ export function setupLists() {
       listsPanel.style.display = 'block';
       mainListView.style.display = 'none';
       // Set flag so reload stays on lists-panel
-      const auth = getAuth();
-      const user = auth.currentUser;
+      const user = appState.user;
       if (user) {
-        localStorage.setItem('yasl-show-lists-panel-' + user.uid, '1');
+        // --- Clear last-list and currentListDocRef when leaving main-list-view ---
+        localStorage.removeItem('yasl-last-list-' + user.uid); //TODO Probably at a better place elsewhere
       }
+      // Also clear currentListDocRef in items.js
+      if (window.clearCurrentListDocRef) window.clearCurrentListDocRef();
       if (appTitleElem) appTitleElem.textContent = "YASL"; // Ensure title is reset
       window.renderUserLists();
+      onListSelected(null);
     });
-  }
-
-  // When a list is selected, clear the flag so reload goes to the list
-  function clearShowListsPanelFlag() {
-    const auth = getAuth();
-    const user = auth.currentUser;
-    if (user) {
-      localStorage.removeItem('yasl-show-lists-panel-' + user.uid);
-    }
   }
 
   // Helper: set last list id in localStorage
   function setLastListId(listId) {
-    const auth = getAuth();
-    const user = auth.currentUser;
+    const user = appState.user;
     if (user && listId) {
       localStorage.setItem('yasl-last-list-' + user.uid, listId);
     }
   }
 
-  // Hide lists-panel on sign out
-  const auth = getAuth();
-  if (auth) {
-    auth.onAuthStateChanged(user => {
-      if (!user) {
-        const listsPanel = document.getElementById('lists-panel');
-        if (listsPanel) listsPanel.style.display = 'none';
-      }
-    });
+  // When a list is selected (replace your current selection logic):
+  function onListSelected(docRef) {
+    if (docRef) {
+      appState.setListRef(docRef);
+    } else {
+      appState.clearListRef();
+    }
   }
 }
