@@ -42,7 +42,6 @@ jobs:
           npm install
           npm run build
           ls -l
-        working-directory: ./web
 
       - name: Create and push Git tag
         if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
