@@ -123,34 +123,22 @@ To build a production-ready distribution package in the `dist` folder using [Vit
 1. **Install Node.js and npm**  
    Make sure you have [Node.js](https://nodejs.org/) and npm installed.
 
-2. **Install Vite**  
-   In your project root, run:
+2. **Install dependencies**  
+   You need to run once:
    ```sh
-   npm install --save-dev vite
+   npm install
    ```
+   **once** after cloning the repository or when dependencies in `package.json` change.  
 
-3. **Add build scripts**  
-   In your `package.json`, add:
-   ```json
-   "scripts": {
-     "dev": "vite",
-     "build": "vite build"
-   }
-   ```
-
-4. **Build the package**  
+3. **Build the package**  
    Run:
    ```sh
    npm run build
    ```
    This will generate the `dist` folder containing all necessary files (JS bundle, CSS, HTML, etc.).
 
-5. **Serve or deploy the contents of `dist`**  
+4. **Serve or deploy the contents of `dist`**  
    You can use any static web server to serve the files in `dist`.
-
-**Note:**  
-- All static assets (CSS, images, favicon, etc.) are copied as-is by Vite.
-- The output will match your source structure and behavior.
 
 ### How to build the Docker image
 
