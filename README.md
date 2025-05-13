@@ -43,7 +43,7 @@ A simple JavaScript web app that stores a shopping list in Firestore and updates
    - Go to Project Settings > General > Your Apps > Firebase SDK snippet > Config.
    - Copy the config object to a file. It should look like this:
      ```js
-     export const firebaseConfig = {
+     window.firebaseConfig = {
        apiKey: "AIza...your real api key...",
        authDomain: "your-app.firebaseapp.com",
        projectId: "your-app",
@@ -52,7 +52,7 @@ A simple JavaScript web app that stores a shopping list in Firestore and updates
        appId: "1:1234567890:web:abcdefg"
      };
      ```
-   - **WARNING:** The `export` keyword will be probably missing in the copied config object, add it, it is important.
+   - **WARNING:** The beginning of the first line `window.firebaseConfig` will be probably different in the copied config object, change it, it is important.
    - **WARNING:** Do not commit this file to version control or expose the application on the web without restricting your API key access (see below).
 
 5. Optionally, **Enable your domain in Firebase Authentication panel**
