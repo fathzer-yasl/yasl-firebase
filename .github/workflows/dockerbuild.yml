@@ -41,6 +41,7 @@ jobs:
         run: |
           npm install
           npm run build
+          ls -l
         working-directory: ./web
 
       - name: Create and push Git tag
