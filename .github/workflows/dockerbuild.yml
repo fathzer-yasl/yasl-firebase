@@ -61,7 +61,7 @@ jobs:
           file: docker/Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/yasl:${{ steps.get_version.outputs.version }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/yasl:${{ steps.get_version.outputs.version }}-preview
         if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
       - name: Add extra tags for merged PR to main
         if: github.event_name == 'pull_request' && github.event.pull_request.merged == true

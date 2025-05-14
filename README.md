@@ -103,7 +103,7 @@ docker run -d -p 8080:8080 \
    - Open (or create if it does not exist) the file `web/public/config/firebaseConfig.js` in your project folder.
    - **Paste your copied config object into `firebaseConfig.js`, replacing the existing one if present.**
    - Save the file.
-   
+
 2. [Build the distribution package](#how-to-build-a-distribution-package-with-vite).
 
 3. **Run the App (Important: Use a Local Server!):**
@@ -114,8 +114,7 @@ docker run -d -p 8080:8080 \
         ```
         python -m http.server 8080
         ```
-    - Open your browser and go to [http://localhost:8080](http://localhost:8080)
-
+     - Open your browser and go to [http://localhost:8080](http://localhost:8080)
 
 ## How to build the distribution package (with Vite)
 
@@ -180,10 +179,9 @@ To run the app with hot reload and a local development server using Vite:
 - Do **not** open `index.html` directly from the filesystem; always use the Vite dev server for development.
 - Only run `npm install` again if you add/remove dependencies in `package.json` or after a fresh clone.
 
-
 ## Use it
 
 1. **Sign in with Google** and log in.
 2. **Create a list**.
-2. **Add items to the list**. All signed-in users will see real-time updates.
-3. **Enjoy!**
+3. **Add items to the list**. All signed-in users will see real-time updates.
+4. **Enjoy!**
