@@ -1,1 +1,5 @@
 /.settings/
+**/node_modules/
+**/firebaseConfig.js
+/package-lock.json
+/dist

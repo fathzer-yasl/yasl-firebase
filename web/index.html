@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>YASL</title>
-  <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="dark-mode.css" id="dark-mode-css" disabled />
-  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="/dark-mode.css" id="dark-mode-css" disabled />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <!-- Firebase App (the core Firebase SDK) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <!-- Add Auth SDK -->
@@ -19,7 +19,7 @@
     <div id="top-bar">
       <div class="app-title">YASL</div>
       <div style="margin-left:auto; display:flex; align-items:center;">
-        <button id="lists-btn" aria-label="Lists">
+        <button id="lists-btn" aria-label="Lists" style="display:none;">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="3" y="7" width="18" height="2" rx="1" fill="#1976d2"/>
             <rect x="5" y="11" width="14" height="2" rx="1" fill="#1976d2"/>
@@ -37,7 +37,7 @@
     <div id="auth-section">
       <button id="sign-in-btn" class="text-btn">Sign in with Google</button>
     </div>
-    <!-- Settings Modal -->
+    <!-- Settings modal dialog -->
     <div id="settings-modal" class="settings-modal" style="display:none;">
       <div class="settings-modal-content">
         <button id="settings-close" aria-label="Close settings" class="settings-close">&times;</button>
@@ -61,12 +61,11 @@
         <div id="app-version-info" style="font-size:0.75em;color:#888;margin-top:0.5em;text-align:right;width:100%;"></div>
       </div>
     </div>
-    <!-- Lists Panel (non-modal, replaces main-list-view) -->
+    <!-- List of available lists -->
     <div id="lists-panel" style="display:none;">
       <form id="add-list-form">
         <input type="text" id="new-list-name" placeholder="List name..." style="flex:1;" />
         <button id="add-list-btn" type="submit" aria-label="Add list">
-          <!-- Same + icon as add-form -->
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle">
             <rect x="9" y="4" width="2" height="12" fill="#1976d2"/>
             <rect x="4" y="9" width="12" height="2" fill="#1976d2"/>
@@ -87,7 +86,8 @@
         </div>
       </div>
     </div>
-    <div id="main-list-view">
+    <!-- Items list -->
+    <div id="main-list-view" style="display:none;">
       <form id="add-item-form">
         <input type="text" id="add-item" placeholder="Add an item..." required />
         <button type="submit" aria-label="Add">
@@ -97,18 +97,20 @@
           </svg>
         </button>
       </form>
-      <ul id="string-list"></ul>
+      <ul id="item-list"></ul>
     </div>
+    <!-- Item removal modal dialog -->
     <div id="remove-modal" class="settings-modal" style="display:none;">
       <div class="settings-modal-content" style="min-width:220px;max-width:90vw;">
-        <div class="remove-modal-title">Remove this item?</div>
+        <div class="remove-modal-title"></div>
         <div class="remove-modal-actions">
           <button id="remove-cancel-btn" class="text-btn" type="button">Cancel</button>
-          <button id="remove-confirm-btn" class="text-btn" type="button">Remove</button>
+          <button id="remove-confirm-btn" class="text-btn" type="button"></button>
         </div>
       </div>
     </div>
   </div>
-  <script type="module" src="main.js"></script>
+  <script src="config/firebaseConfig.js"></script>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>
