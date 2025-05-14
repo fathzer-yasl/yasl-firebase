@@ -1,4 +1,5 @@
 import { getAuth } from './auth.js';
+import { appRelease } from './release.js';
 
 export function setupSettings() {
   const darkModeCSS = document.getElementById('dark-mode-css');
@@ -42,18 +43,10 @@ export function setupSettings() {
   }
 
   // Set app name and version in settings modal
-  fetch('package.json')
-    .then(res => res.json())
-    .then(pkg => {
-      const infoDiv = document.getElementById('app-version-info');
-      if (infoDiv && pkg.name && pkg.version) {
-        infoDiv.textContent = `${pkg.name} v${pkg.version}`;
-      }
-    })
-    .catch(() => {
-      const infoDiv = document.getElementById('app-version-info');
-      if (infoDiv) infoDiv.textContent = '';
-    });
+  const infoDiv = document.getElementById('app-version-info');
+  if (infoDiv) {
+    infoDiv.textContent = `YASL v${appRelease}`;
+  }
 
   function updateUserInfoDisplay() {
     const auth = getAuth();

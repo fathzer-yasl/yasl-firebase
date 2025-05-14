@@ -28,10 +28,10 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Extract version from package.json
+      - name: Extract version from release.js
         id: get_version
         run: |
-          VERSION=$(jq -r .version web/package.json)
+          VERSION=$(grep -oP 'appRelease\s*=\s*"\K[^"]+' web/js/release.js)
           MAIN_VERSION=$(echo "$VERSION" | cut -d'-' -f1)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "main_version=$MAIN_VERSION" >> $GITHUB_OUTPUT
