@@ -42,30 +42,13 @@ export function setupLists(appState) {
     const user = appState.user;
     if (!user) return;
 
-    // Query lists where user is in 'users' or in 'guests'
-    const [usersSnap, guestsSnap] = await Promise.all([
-      db.collection('stringList').where('users', 'array-contains', user.email).get(),
-      db.collection('stringList').where('guests', 'array-contains', user.email).get()
-    ]);
-    // Merge results, avoiding duplicates
-    const seen = new Set();
-    const allDocs = [];
-    usersSnap.forEach(doc => {
-      seen.add(doc.id);
-      allDocs.push(doc);
-    });
-    guestsSnap.forEach(doc => {
-      if (!seen.has(doc.id)) {
-        allDocs.push(doc);
-      }
-    });
+    // Query lists where user is in 'users'
+    const allDocs = await db.collection('stringList').where('users', 'array-contains', user.email).get();
 
     allDocs.forEach(doc => {
       const data = doc.data();
-      const usersArr = Array.isArray(data.users) ? data.users : [];
-      const guestsArr = Array.isArray(data.guests) ? data.guests : [];
-      const isOwner = usersArr.includes(user.email);
-      const isGuest = !isOwner && guestsArr.includes(user.email);
+      const guestsArr = Array.isArray(data.guests) ? data.guests : data.users;
+      const isOwner = !guestsArr.includes(user.email);
 
       // --- Begin new list rendering ---
       const div = document.createElement('div');
@@ -85,7 +68,7 @@ export function setupLists(appState) {
       if (isOwner) {
         hasOwned = true;
         ownedListsDiv.appendChild(div);
-      } else if (isGuest) {
+      } else {
         hasShared = true;
         sharedListsDiv.appendChild(div);
       }
