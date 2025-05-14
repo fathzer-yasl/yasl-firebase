@@ -1,4 +1,6 @@
 import { getFirestore } from './auth.js';
+import { addLongPressListener } from './utils.js';
+import { showConfirmDialog } from './confirm.js';
 
 let onListSelectedCallback = null;
 
@@ -63,6 +65,8 @@ export function setupLists(appState) {
       const secondLine = buildListProgress();
       div.appendChild(nameLine);
       div.appendChild(secondLine);
+	  // Add long-press listener to the whole row
+      addLongPressListener(div, () => showConfirmDialog("Are you ok?","Ok, go!", () =>{}));
       // --- End new list rendering ---
 
       if (isOwner) {
