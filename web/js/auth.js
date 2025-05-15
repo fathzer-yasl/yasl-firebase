@@ -1,16 +1,10 @@
-let auth = null;
 let db = null;
-
-export function getAuth() {
-  return auth;
-}
 
 export function getFirestore() {
   return db;
 }
 
 export async function setupAuth(appState) {
-  auth = firebase.auth();
   db = firebase.firestore();
 
   const signInBtn = document.getElementById('sign-in-btn');
@@ -28,7 +22,6 @@ export async function setupAuth(appState) {
   });
 
   appState.addEventListener('auth-changed', (e) => {
-    console.log('auth-changed', e.detail);
     const user = e.detail.user;
     if (user) {
       signInBtn.style.display = 'none';

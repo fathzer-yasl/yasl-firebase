@@ -1,4 +1,4 @@
-import { getAuth, getFirestore } from './auth.js';
+import { getFirestore } from './auth.js';
 import { showConfirmDialog } from './confirm.js';
 
 let currentListDocRef = null;
@@ -52,20 +52,6 @@ export function setupItems(appState) {
     });
   });
 
-  // Unsubscribe from snapshot on sign out or when main-list-view is hidden
-  const auth = getAuth();
-  if (auth) {
-    auth.onAuthStateChanged(user => {
-      if (!user && unsubscribeSnapshot) {
-        unsubscribeSnapshot();
-        unsubscribeSnapshot = null;
-        currentListDocRef = null;
-        // Do not call renderList([]); let the main app show the lists-panel
-        if (appTitleElem) appTitleElem.textContent = 'YASL';
-      }
-    });
-  }
-
   // Observe visibility changes to main-list-view only
   const observer = new MutationObserver(() => {
     if (mainListView && mainListView.style.display === 'none') {
@@ -80,12 +66,6 @@ export function setupItems(appState) {
   if (addItemForm) {
     addItemForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const auth = getAuth();
-      const user = auth.currentUser;
-      if (!user) {
-        alert('Please sign in first.');
-        return;
-      }
       const newStr = addItemInput.value.trim();
       if (!newStr || !currentListDocRef) return;
       await db.runTransaction(async (transaction) => {
