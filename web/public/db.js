@@ -48,6 +48,13 @@
       this.firestore = firebase.firestore();
     }
 
+    register(appState) {
+      this.appState = appState;
+      this.auth.onAuthStateChanged(user => {
+        this.appState.setUser(user);
+      });
+    }
+
     signIn() {
       const provider = new firebase.auth.GoogleAuthProvider();
       this.auth.signInWithPopup(provider).catch(err => {

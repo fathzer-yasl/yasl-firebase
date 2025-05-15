@@ -1,4 +1,4 @@
-import { setupAuth, ready as authReady } from './auth.js';
+import { setupAuth } from './auth.js';
 import { setupLists } from './lists.js';
 import { setupItems } from './items.js';
 import { setupSettings } from './settings.js';
@@ -16,8 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   await window.dbReady;
   setupAuth(appState); // Pass appState here
-  setupSettings();
-  await authReady;
+  setupSettings(appState);
   setupLists(appState);
   setupItems(appState);
 

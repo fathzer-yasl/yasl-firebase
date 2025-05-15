@@ -1,9 +1,5 @@
-let app = null;
 let auth = null;
 let db = null;
-
-let readyResolve;
-export const ready = new Promise(resolve => { readyResolve = resolve; });
 
 export function getAuth() {
   return auth;
@@ -22,6 +18,8 @@ export async function setupAuth(appState) {
   const userNameElem = document.getElementById('user-name');
   const userEmailElem = document.getElementById('user-email');
 
+  window.db.register(appState);
+
   signInBtn?.addEventListener('click', () => {
     window.db.signIn();
   });
@@ -29,26 +27,20 @@ export async function setupAuth(appState) {
     window.db.signout();
   });
 
-  if (auth) {
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        if (signInBtn) signInBtn.style.display = 'none';
-        if (signOutBtn) signOutBtn.style.display = 'inline-block';
-        if (userNameElem) userNameElem.textContent = user.displayName || '';
-        if (userEmailElem) userEmailElem.textContent = user.email || '';
-        if (appState) appState.setUser(user);
-      } else {
-        if (signInBtn) signInBtn.style.display = 'inline-block';
-        if (signOutBtn) signOutBtn.style.display = 'none';
-        if (userNameElem) userNameElem.textContent = '';
-        if (userEmailElem) userEmailElem.textContent = '';
-        if (appState) {
-          appState.setUser(null);
-          appState.clearListRef(); // Ensure no list is selected on sign out
-        }
-      }
-    });
-  }
-
-  if (readyResolve) readyResolve();
+  appState.addEventListener('auth-changed', (e) => {
+    console.log('auth-changed', e.detail);
+    const user = e.detail.user;
+    if (user) {
+      signInBtn.style.display = 'none';
+      signOutBtn.style.display = 'inline-block';
+      userNameElem.textContent = user.displayName || '';
+      userEmailElem.textContent = user.email || '';
+    } else {
+      signInBtn.style.display = 'inline-block';
+      signOutBtn.style.display = 'none';
+      userNameElem.textContent = '';
+      userEmailElem.textContent = '';
+      appState.clearListRef(); // Ensure no list is selected on sign out
+    }
+  });
 }
