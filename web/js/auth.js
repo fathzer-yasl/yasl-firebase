@@ -1,6 +1,5 @@
 let app = null;
 let auth = null;
-let provider = null;
 let db = null;
 
 let readyResolve;
@@ -14,36 +13,8 @@ export function getFirestore() {
   return db;
 }
 
-// Load firebaseConfig.js dynamically at runtime
-function loadFirebaseConfig() {
-  return new Promise((resolve, reject) => {
-    if (window.firebaseConfig) {
-      resolve(window.firebaseConfig);
-      return;
-    }
-    const script = document.createElement('script');
-    script.src = 'config/firebaseConfig.js';
-    script.onload = () => {
-      if (window.firebaseConfig) {
-        resolve(window.firebaseConfig);
-      } else {
-        reject(new Error('firebaseConfig.js loaded but window.firebaseConfig is not defined'));
-      }
-    };
-    script.onerror = () => reject(new Error('Failed to load firebaseConfig.js'));
-    document.head.appendChild(script);
-  });
-}
-
 export async function setupAuth(appState) {
-  const firebaseConfig = await loadFirebaseConfig();
-  if (!firebase.apps.length) {
-    app = firebase.initializeApp(firebaseConfig);
-  } else {
-    app = firebase.app();
-  }
   auth = firebase.auth();
-  provider = new firebase.auth.GoogleAuthProvider();
   db = firebase.firestore();
 
   const signInBtn = document.getElementById('sign-in-btn');
@@ -52,12 +23,10 @@ export async function setupAuth(appState) {
   const userEmailElem = document.getElementById('user-email');
 
   signInBtn?.addEventListener('click', () => {
-    auth.signInWithPopup(provider).catch(err => {
-      alert('Sign-in failed: ' + err.message);
-    });
+    window.db.signIn();
   });
   signOutBtn?.addEventListener('click', () => {
-    auth.signOut();
+    window.db.signout();
   });
 
   if (auth) {

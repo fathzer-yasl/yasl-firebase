@@ -4,10 +4,6 @@ import { setupItems } from './items.js';
 import { setupSettings } from './settings.js';
 import { AppState } from './app-state.js';
 
-if (!firebase.apps.length) {
-  firebase.initializeApp(window.firebaseConfig);
-}
-
 document.addEventListener('DOMContentLoaded', async () => {
   // Hide both panels initially
   const listsPanel = document.getElementById('lists-panel');
@@ -17,6 +13,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   mainListView.style.display = 'none';
 
   const appState = new AppState();
+
+  await window.dbReady;
   setupAuth(appState); // Pass appState here
   setupSettings();
   await authReady;
@@ -57,8 +55,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       listsBtn.style.display = 'none';
     }
   });
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupListsBtnVisibility);
+  }
 });
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', setupListsBtnVisibility);
-}
