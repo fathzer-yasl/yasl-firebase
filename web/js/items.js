@@ -1,4 +1,4 @@
-import { getAuth, getFirestore } from './auth.js';
+import { db, auth } from '../public/firebase-init.js';
 import { showConfirmDialog } from './confirm.js';
 
 let currentListDocRef = null;
@@ -17,7 +17,7 @@ window.clearCurrentListDocRef = function() {
 };
 
 export function setupItems(appState) {
-  const db = getFirestore();
+  // db is already imported from firebase-init.js
   const stringListElem = document.getElementById('item-list');
   const addItemForm = document.getElementById('add-item-form');
   const addItemInput = document.getElementById('add-item');
@@ -53,7 +53,6 @@ export function setupItems(appState) {
   });
 
   // Unsubscribe from snapshot on sign out or when main-list-view is hidden
-  const auth = getAuth();
   if (auth) {
     auth.onAuthStateChanged(user => {
       if (!user && unsubscribeSnapshot) {

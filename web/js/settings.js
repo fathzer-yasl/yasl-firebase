@@ -1,4 +1,4 @@
-import { getAuth } from './auth.js';
+import { auth } from '../public/firebase-init.js';
 import { appRelease } from './release.js';
 
 export function setupSettings() {
@@ -78,22 +78,18 @@ export function setupSettings() {
 
   if (signOutBtn) {
     signOutBtn.addEventListener('click', () => {
-      const auth = getAuth();
-      if (auth) auth.signOut();
+      auth.signOut();
       // Do not hide modal or user info row here; let auth state change handle UI
     });
   }
 
   // Listen for auth state changes to update the dialog UI if open
-  const auth = getAuth();
-  if (auth) {
-    auth.onAuthStateChanged(() => {
-      // Only update if modal is open
-      if (settingsModal && settingsModal.style.display === 'flex') {
-        updateUserInfoDisplay();
-      }
-    });
-  }
+  auth.onAuthStateChanged(() => {
+    // Only update if modal is open
+    if (settingsModal && settingsModal.style.display === 'flex') {
+      updateUserInfoDisplay();
+    }
+  });
 
   if (settingsClose && settingsModal) {
     settingsClose.addEventListener('click', () => {

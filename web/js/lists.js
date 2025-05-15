@@ -1,4 +1,4 @@
-import { getFirestore } from './auth.js';
+import db from '../public/db.js';
 import { addLongPressListener } from './utils.js';
 import { showConfirmDialog } from './confirm.js';
 
@@ -8,23 +8,21 @@ export function onListSelected(cb) {
   onListSelectedCallback = cb;
 }
 
-// Select a list by its Firestore doc id and trigger the callback
-export function selectListById(listId) {
-  const db = getFirestore();
-  if (!listId || !db) return;
-  const docRef = db.collection('stringList').doc(listId);
+// Select a list by its id and trigger the callback
+export async function selectListById(listId) {
+  if (!listId) return;
+  const list = await db.getList(listId);
   if (typeof onListSelectedCallback === 'function') {
-    onListSelectedCallback(docRef);
+    onListSelectedCallback(list);
   }
 }
 
 export function setupLists(appState) {
+  console.debug('[setupLists] called', appState);
   const appTitleElem = document.querySelector('.app-title');
 
   window.renderUserLists = async function(selectListId = null) {
-    const db = getFirestore();
-    if (!db) return; // Prevent error if called before Firebase is initialized
-
+  console.debug('[renderUserLists] called');
     const ownedListsDiv = document.getElementById('user-owned-lists');
     const sharedListsDiv = document.getElementById('user-shared-lists');
     const ownedSection = document.getElementById('user-owned-lists-section');
@@ -44,11 +42,15 @@ export function setupLists(appState) {
     const user = appState.user;
     if (!user) return;
 
-    // Query lists where user is in 'users'
-    const allDocs = await db.collection('stringList').where('users', 'array-contains', user.email).get();
-
-    allDocs.forEach(doc => {
-      const data = doc.data();
+    // Debug: log user and auth state before fetching lists
+    console.debug('[renderUserLists] appState.user:', user);
+    import('../public/firebase-init.js').then(({ auth }) => {
+      console.debug('[renderUserLists] auth.currentUser:', auth.currentUser);
+    });
+    // Use db abstraction to get all lists for the user
+    const allLists = await db.getLists();
+    allLists.forEach(list => {
+      const data = list;
       const guestsArr = Array.isArray(data.guests) ? data.guests : data.users;
       const isOwner = !guestsArr.includes(user.email);
 
@@ -65,7 +67,7 @@ export function setupLists(appState) {
       const secondLine = buildListProgress();
       div.appendChild(nameLine);
       div.appendChild(secondLine);
-	  // Add long-press listener to the whole row
+      // Add long-press listener to the whole row
       addLongPressListener(div, () => showConfirmDialog("Are you ok?","Ok, go!", () =>{}));
       // --- End new list rendering ---
 
@@ -77,7 +79,7 @@ export function setupLists(appState) {
         sharedListsDiv.appendChild(div);
       }
       // Auto-select last list if needed
-      if (selectListId && doc.id === selectListId && !foundListToSelect) {
+      if (selectListId && list.id === selectListId && !foundListToSelect) {
         foundListToSelect = true;
         setTimeout(() => {
           nameSpan.click();
@@ -89,7 +91,7 @@ export function setupLists(appState) {
         nameLine.style.display = 'flex';
         nameLine.style.alignItems = 'center';
         const nameSpan = document.createElement('span');
-        nameSpan.textContent = data.name || doc.id;
+        nameSpan.textContent = data.name || list.id;
         nameSpan.style.cursor = 'pointer';
         nameSpan.style.color = '#1976d2';
         nameSpan.style.textDecoration = 'underline';
@@ -98,13 +100,11 @@ export function setupLists(appState) {
           const mainListView = document.getElementById('main-list-view');
           listsPanel.style.display = 'none';
           mainListView.style.display = '';
-          const docRef = db.collection('stringList').doc(doc.id);
-          setLastListId(doc.id);
-		  //TODO This piece of code is quite strange to me
+          setLastListId(list.id);
           if (typeof onListSelectedCallback === 'function') {
-            onListSelectedCallback(docRef);
+            onListSelectedCallback(list);
           }
-          onListSelected(docRef);
+          onListSelected(list);
         };
         nameLine.appendChild(nameSpan);
         return { nameLine, nameSpan };
@@ -186,18 +186,18 @@ export function setupLists(appState) {
       e.preventDefault();
       const name = newListNameInput.value.trim();
       if (!appState.user || !name) return;
-      const db = getFirestore();
-      if (!db) return;
-      // Create a new document with a generated id
-      const docRef = await db.collection('stringList').add({
+      // Create a new list using db abstraction
+      const newList = {
         name,
         users: [appState.user.email],
         guests: [],
         list: []
-      });
+      };
+      // Use a generated id (could use a random string or Date.now, here we let db.putList generate one if id is null)
+      const created = await db.putList(null, newList);
       newListNameInput.value = '';
-      setLastListId(docRef.id);
-      window.renderUserLists(docRef.id);
+      setLastListId(created.id);
+      window.renderUserLists(created.id);
     });
   }
 
