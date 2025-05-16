@@ -124,20 +124,20 @@
       const data = { id: doc.id, ...doc.data() };
       // Attach an onSnapshot method for real-time updates
       data.onSnapshot = (callback) => docRef.onSnapshot(snapshot => {
-        callback({ id: snapshot.id, ...snapshot.data() });
+        callback(snapshot.data());
       });
       return data;
     }
 
     /**
      * Updates a list by its ID with the provided data.
+     * @param {string} id - The list ID
      * @param {Object} data - The list data to update, must include id
      * @returns {Promise<void>}
      */
-    async updateList(data) {
-      const { id, ...rest } = data;
+    async updateList(id, data) {
       if (!id) throw new Error('updateList: id is required');
-      await this.firestore.collection(FireDB.#LISTS_COLLECTION).doc(id).update(rest);
+      await this.firestore.collection(FireDB.#LISTS_COLLECTION).doc(id).update(data);
     }
 
     /**

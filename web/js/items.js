@@ -16,8 +16,21 @@ window.clearCurrentListDocRef = function() {
   if (appTitleElem) appTitleElem.textContent = 'YASL';
 };
 
-export function setupItems(appState) {
+// Helper to update the list in a transaction
+async function updateListWith(updater) {
   const db = window.db.firestore;
+  await db.runTransaction(async (transaction) => {
+    const doc = await transaction.get(currentListDocRef);
+    let currentList = [];
+    if (doc.exists && Array.isArray(doc.data().list)) {
+      currentList = doc.data().list;
+    }
+    const newList = updater(currentList, doc);
+    transaction.set(currentListDocRef, { ...doc.data(), list: newList });
+  });
+}
+
+export function setupItems(appState) {
   const stringListElem = document.getElementById('item-list');
   const addItemForm = document.getElementById('add-item-form');
   const addItemInput = document.getElementById('add-item');
@@ -70,14 +83,9 @@ export function setupItems(appState) {
       e.preventDefault();
       const newStr = addItemInput.value.trim();
       if (!newStr || !currentListDocRef) return;
-      await db.runTransaction(async (transaction) => {
-        const doc = await transaction.get(currentListDocRef);
-        let currentList = [];
-        if (doc.exists && Array.isArray(doc.data().list)) {
-          currentList = doc.data().list;
-        }
+      await updateListWith((currentList, doc) => {
         const newItem = { name: newStr, checked: false, urgent: false };
-        transaction.set(currentListDocRef, { ...doc.data(), list: [...currentList, newItem] });
+        return [...currentList, newItem];
       });
       addItemInput.value = '';
     });
@@ -133,19 +141,6 @@ export function setupItems(appState) {
       checked.forEach(item => renderListItem(item, checkedGroup, items));
       stringListElem.appendChild(checkedGroup);
     }
-  }
-
-  // Helper to update the list in a transaction
-  async function updateListWith(updater) {
-    await db.runTransaction(async (transaction) => {
-      const doc = await transaction.get(currentListDocRef);
-      let currentList = [];
-      if (doc.exists && Array.isArray(doc.data().list)) {
-        currentList = doc.data().list;
-      }
-      const newList = updater(currentList, doc);
-      transaction.set(currentListDocRef, { ...doc.data(), list: newList });
-    });
   }
 
   function renderListItem(item, parentElem, items) {
