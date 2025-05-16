@@ -2,22 +2,25 @@
 export class AppState extends EventTarget {
   constructor() {
     super();
-    this.currentListRef = null;
+    this.listId = null;
     this.user = null;
   }
 
-  setListRef(listRef) {
-    this.currentListRef = listRef;
-    this.dispatchEvent(new CustomEvent('listref-changed', { detail: { listRef } }));
-  }
-
-  clearListRef() {
-    this.currentListRef = null;
-    this.dispatchEvent(new CustomEvent('listref-changed', { detail: { listRef: null } }));
+  /**
+   * Sets the current list id and dispatches a 'listid-changed' event.
+   * @param {String} listId - The list id string, or null if no list is selected
+   * @throws {TypeError} If listRef is not a string or null
+   */
+  setListId(listId) {
+    if (listId !== null && typeof listId !== 'string') {
+      throw new TypeError('AppState.setListId: listId must be a string or null');
+    }
+    this.listId = listId;
+    this.dispatchEvent(new CustomEvent('listid-changed', { detail: { listId: listId } }));
   }
 
   /**
-   * Sets the current user and dispatches an 'auth-changed' event.
+   * Sets the current user and dispatches an 'user-changed' event.
    * @param {Object} user - The user object, this user must have an email and a displayName attribute, or null
    */
   setUser(user) {
@@ -33,6 +36,6 @@ export class AppState extends EventTarget {
       }
     }
     this.user = user;
-    this.dispatchEvent(new CustomEvent('auth-changed', { detail: { user } }));
+    this.dispatchEvent(new CustomEvent('user-changed', { detail: { user } }));
   }
 }

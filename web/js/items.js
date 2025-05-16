@@ -1,33 +1,26 @@
 import { showConfirmDialog } from './confirm.js';
 
-let currentListDocRef = null;
+let currentList = null;
 let unsubscribeSnapshot = null;
 let checkedGroupCollapsed = false;
 
-// Expose a global function to clear currentListDocRef and unsubscribe
+// Expose a global function to clear currentList and unsubscribe
 //TODO This function is probably useless
 window.clearCurrentListDocRef = function() {
   if (unsubscribeSnapshot) {
     unsubscribeSnapshot();
     unsubscribeSnapshot = null;
   }
-  currentListDocRef = null;
+  currentList = null;
   const appTitleElem = document.querySelector('.app-title');
   if (appTitleElem) appTitleElem.textContent = 'YASL';
 };
 
 // Helper to update the list in a transaction
 async function updateListWith(updater) {
-  const db = window.db.firestore;
-  await db.runTransaction(async (transaction) => {
-    const doc = await transaction.get(currentListDocRef);
-    let currentList = [];
-    if (doc.exists && Array.isArray(doc.data().list)) {
-      currentList = doc.data().list;
-    }
-    const newList = updater(currentList, doc);
-    transaction.set(currentListDocRef, { ...doc.data(), list: newList });
-  });
+  const newList = updater(currentList.list);
+  currentList.list = newList;
+  await window.db.updateList(currentList);
 }
 
 export function setupItems(appState) {
@@ -38,20 +31,19 @@ export function setupItems(appState) {
   const mainListView = document.getElementById('main-list-view');
 
   // Listen to AppState for list selection
-  appState.addEventListener('listref-changed', (e) => {
-    const docRef = e.detail.listRef;
+  appState.addEventListener('listid-changed', (e) => {
+    const docRef = e.detail.listId;
     if (unsubscribeSnapshot) {
       unsubscribeSnapshot();
       unsubscribeSnapshot = null;
     }
-    currentListDocRef = docRef;
-    if (!currentListDocRef) {
+    if (!docRef) {
       if (appTitleElem) appTitleElem.textContent = 'YASL';
       if (mainListView) mainListView.style.display = 'none'; // Hide the whole items panel
       return;
     }
     if (mainListView) mainListView.style.display = ''; // Show the whole items panel
-    window.db.getList(currentListDocRef.id).then(x => {
+    window.db.getList(docRef).then(x => {
       unsubscribeSnapshot = x.onSnapshot(doc => {
           const data = doc;
           // Set the app title to the list name if available
@@ -64,6 +56,7 @@ export function setupItems(appState) {
             stringListElem.innerHTML = '';
           }
         });
+        currentList = x;
       });
     });
 
@@ -82,8 +75,8 @@ export function setupItems(appState) {
     addItemForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const newStr = addItemInput.value.trim();
-      if (!newStr || !currentListDocRef) return;
-      await updateListWith((currentList, doc) => {
+      if (!newStr || !currentList) return;
+      await updateListWith((currentList) => {
         const newItem = { name: newStr, checked: false, urgent: false };
         return [...currentList, newItem];
       });

@@ -1,6 +1,3 @@
-import { addLongPressListener } from './utils.js';
-import { showConfirmDialog } from './confirm.js';
-
 export function setupLists(appState) {
   const appTitleElem = document.querySelector('.app-title');
 
@@ -75,9 +72,8 @@ export function setupLists(appState) {
           const mainListView = document.getElementById('main-list-view');
           listsPanel.style.display = 'none';
           mainListView.style.display = '';
-          const docRef = window.db.firestore.collection('stringList').doc(list.id);
           setLastListId(list.id);
-          onListSelected(docRef);
+          onListSelected(list.id);
         };
         nameLine.appendChild(nameSpan);
         return { nameLine, nameSpan };
@@ -192,11 +188,7 @@ export function setupLists(appState) {
   }
 
   // When a list is selected (replace your current selection logic):
-  function onListSelected(docRef) {
-    if (docRef) {
-      appState.setListRef(docRef);
-    } else {
-      appState.clearListRef();
-    }
+  function onListSelected(listId) {
+     appState.setListId(listId);
   }
 }

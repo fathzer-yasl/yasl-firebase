@@ -42,6 +42,7 @@
     static #LISTS_COLLECTION = 'stringList';
     #auth;
     #appState;
+    #firestore;
     /**
      * Initializes the connection to the database.
      */
@@ -50,7 +51,7 @@
         firebase.initializeApp(window.firebaseConfig);
       }
       this.#auth = firebase.auth();
-      this.firestore = firebase.firestore();
+      this.#firestore = firebase.firestore();
     }
 
     /**
@@ -96,7 +97,7 @@
     async getUserLists() {
       const user = this.#appState.user;
       if (!user?.email) throw new Error('A logged in user with an email is required');
-      const snapshot = await this.firestore.collection(FireDB.#LISTS_COLLECTION)
+      const snapshot = await this.#firestore.collection(FireDB.#LISTS_COLLECTION)
         .where('users', 'array-contains', user.email)
         .get();
       return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -118,26 +119,26 @@
      *   }
      */
     async getList(id) {
-      const docRef = this.firestore.collection(FireDB.#LISTS_COLLECTION).doc(id);
+      const docRef = this.#firestore.collection(FireDB.#LISTS_COLLECTION).doc(id);
       const doc = await docRef.get();
       if (!doc.exists) return null;
       const data = { id: doc.id, ...doc.data() };
       // Attach an onSnapshot method for real-time updates
       data.onSnapshot = (callback) => docRef.onSnapshot(snapshot => {
-        callback(snapshot.data());
+        callback({ id: snapshot.id, ...snapshot.data() });
       });
       return data;
     }
 
     /**
      * Updates a list by its ID with the provided data.
-     * @param {string} id - The list ID
      * @param {Object} data - The list data to update, must include id
      * @returns {Promise<void>}
      */
-    async updateList(id, data) {
+    async updateList(data) {
+      const { id, onSnapshot, ...rest } = data;
       if (!id) throw new Error('updateList: id is required');
-      await this.firestore.collection(FireDB.#LISTS_COLLECTION).doc(id).update(data);
+      await this.#firestore.collection(FireDB.#LISTS_COLLECTION).doc(id).update(rest);
     }
 
     /**
@@ -146,7 +147,7 @@
      * @returns {Promise<void>}
      */
     async deleteList(id) {
-      await this.firestore.collection(FireDB.#LISTS_COLLECTION).doc(id).delete();
+      await this.#firestore.collection(FireDB.#LISTS_COLLECTION).doc(id).delete();
     }
 
     /**
@@ -158,7 +159,7 @@
     createList(name) {
       const user = this.#appState.user;
       if (!user?.email) throw new Error('A logged in user with an email is required');
-      return this.firestore.collection(FireDB.#LISTS_COLLECTION).add({
+      return this.#firestore.collection(FireDB.#LISTS_COLLECTION).add({
         name,
         users: [user.email],
         guests: [],

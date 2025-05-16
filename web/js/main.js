@@ -21,9 +21,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupItems(appState);
 
   // Listen to state changes and show/hide panels
-  appState.addEventListener('listref-changed', (e) => {
-    const listRef = e.detail.listRef;
-    if (listRef) {
+  appState.addEventListener('listid-changed', (e) => {
+    const listId = e.detail.listId;
+    if (listId) {
       mainListView.style.display = '';
       listsPanel.style.display = 'none';
       listsBtn.style.display = '';
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // Listen to auth state changes to hide lists-panel on sign out
-  appState.addEventListener('auth-changed', (e) => {
+  appState.addEventListener('user-changed', (e) => {
     const user = e.detail.user;
     if (user) {
       const lastListId = localStorage.getItem('yasl-last-list-' + user.uid);
