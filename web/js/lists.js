@@ -25,11 +25,10 @@ export function setupLists(appState) {
     if (!user) return;
 
     // Query lists where user is in 'users' using FireDB abstraction
-    const allDocs = await window.db.getUserLists(user);
+    const allLists = await window.db.getUserLists(user);
 
-    allDocs.forEach(doc => {
-      const data = doc.data();
-      const guestsArr = Array.isArray(data.guests) ? data.guests : data.users;
+    allLists.forEach(list => {
+      const guestsArr = Array.isArray(list.guests) ? list.guests : list.users;
       const isOwner = !guestsArr.includes(user.email);
 
       // --- Begin new list rendering ---
@@ -45,8 +44,6 @@ export function setupLists(appState) {
       const secondLine = buildListProgress();
       div.appendChild(nameLine);
       div.appendChild(secondLine);
-	  // Add long-press listener to the whole row
-      addLongPressListener(div, () => showConfirmDialog("Are you ok?","Ok, go!", () =>{}));
       // --- End new list rendering ---
 
       if (isOwner) {
@@ -57,7 +54,7 @@ export function setupLists(appState) {
         sharedListsDiv.appendChild(div);
       }
       // Auto-select last list if needed
-      if (selectListId && doc.id === selectListId && !foundListToSelect) {
+      if (selectListId && list.id === selectListId && !foundListToSelect) {
         foundListToSelect = true;
         setTimeout(() => {
           nameSpan.click();
@@ -69,7 +66,7 @@ export function setupLists(appState) {
         nameLine.style.display = 'flex';
         nameLine.style.alignItems = 'center';
         const nameSpan = document.createElement('span');
-        nameSpan.textContent = data.name || doc.id;
+        nameSpan.textContent = list.name || list.id;
         nameSpan.style.cursor = 'pointer';
         nameSpan.style.color = '#1976d2';
         nameSpan.style.textDecoration = 'underline';
@@ -78,8 +75,8 @@ export function setupLists(appState) {
           const mainListView = document.getElementById('main-list-view');
           listsPanel.style.display = 'none';
           mainListView.style.display = '';
-          const docRef = window.db.firestore.collection('stringList').doc(doc.id);
-          setLastListId(doc.id);
+          const docRef = window.db.firestore.collection('stringList').doc(list.id);
+          setLastListId(list.id);
           onListSelected(docRef);
         };
         nameLine.appendChild(nameSpan);
@@ -94,9 +91,9 @@ export function setupLists(appState) {
 
         // Progress calculation
         let checked = 0, total = 0;
-        if (Array.isArray(data.list)) {
-          total = data.list.length;
-          checked = data.list.filter(item => item.checked).length;
+        if (Array.isArray(list.list)) {
+          total = list.list.length;
+          checked = list.list.filter(item => item.checked).length;
         }
         const percent = total > 0 ? Math.round((checked / total) * 100) : 0;
 

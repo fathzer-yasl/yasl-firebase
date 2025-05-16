@@ -1,4 +1,3 @@
-import { getFirestore } from './auth.js';
 import { showConfirmDialog } from './confirm.js';
 
 let currentListDocRef = null;
@@ -17,7 +16,7 @@ window.clearCurrentListDocRef = function() {
 };
 
 export function setupItems(appState) {
-  const db = getFirestore();
+  const db = window.db.firestore;
   const stringListElem = document.getElementById('item-list');
   const addItemForm = document.getElementById('add-item-form');
   const addItemInput = document.getElementById('add-item');

@@ -1,12 +1,4 @@
-let db = null;
-
-export function getFirestore() {
-  return db;
-}
-
 export async function setupAuth(appState) {
-  db = firebase.firestore();
-
   const signInBtn = document.getElementById('sign-in-btn');
   const signOutBtn = document.getElementById('sign-out-btn');
   const userNameElem = document.getElementById('user-name');

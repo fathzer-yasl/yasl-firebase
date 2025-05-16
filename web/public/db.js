@@ -40,6 +40,9 @@
   class FireDB {
     #auth;
     #appState;
+    /**
+     * Initializes the connection to the database.
+     */
     constructor() {
       if (!firebase.apps.length) {
         firebase.initializeApp(window.firebaseConfig);
@@ -48,6 +51,10 @@
       this.firestore = firebase.firestore();
     }
 
+    /**
+     * Registers the application state and sets up an authentication state observer.
+     * @param {Object} appState - The application state object that manages user data
+     */
     register(appState) {
       this.#appState = appState;
       this.#auth.onAuthStateChanged(user => {
@@ -55,6 +62,10 @@
       });
     }
 
+    /**
+     * Initiates sign-in, possibly using a popup window.
+     * Displays an alert if sign-in fails.
+     */
     signIn() {
       const provider = new firebase.auth.GoogleAuthProvider();
       this.#auth.signInWithPopup(provider).catch(err => {
@@ -62,21 +73,25 @@
       });
     }
 
+    /**
+     * Signs out the currently authenticated user.
+     */
     signout() {
       this.#auth.signOut();
     }
 
     /**
      * Gets the lists where the logged in user is in the 'users' array.
-     * @returns {Promise<QuerySnapshot>} Firestore query snapshot
+     * @returns {Promise<Array<{id: string, [field: string]: any}>>} Promise resolving to an array of list objects, each containing the document id and its data fields
      * @throws {Error} If no logged in user with an email is found
      */
-    getUserLists() {
+    async getUserLists() {
       const user = this.#appState.user;
-      if (!user || !user.email) throw new Error('A logged in user with an email is required');
-      return this.firestore.collection('stringList')
+      if (!user?.email) throw new Error('A logged in user with an email is required');
+      const snapshot = await this.firestore.collection('stringList')
         .where('users', 'array-contains', user.email)
         .get();
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     }
 
     /**
@@ -87,7 +102,7 @@
      */
     createList(name) {
       const user = this.#appState.user;
-      if (!user || !user.email) throw new Error('A logged in user with an email is required');
+      if (!user?.email) throw new Error('A logged in user with an email is required');
       return this.firestore.collection('stringList').add({
         name,
         users: [user.email],
