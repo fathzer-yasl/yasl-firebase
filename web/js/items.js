@@ -5,6 +5,7 @@ let unsubscribeSnapshot = null;
 let checkedGroupCollapsed = false;
 
 // Expose a global function to clear currentListDocRef and unsubscribe
+//TODO This function is probably useless
 window.clearCurrentListDocRef = function() {
   if (unsubscribeSnapshot) {
     unsubscribeSnapshot();
@@ -37,19 +38,21 @@ export function setupItems(appState) {
       return;
     }
     if (mainListView) mainListView.style.display = ''; // Show the whole items panel
-    unsubscribeSnapshot = currentListDocRef.onSnapshot(doc => {
-      const data = doc.data();
-      // Set the app title to the list name if available
-      if (appTitleElem) {
-        appTitleElem.textContent = (data?.name) ? data.name : 'YASL';
-      }
-      if (data && Array.isArray(data.list)) {
-        renderList(data.list);
-      } else if (stringListElem) {
-        stringListElem.innerHTML = '';
-      }
+    window.db.getList(currentListDocRef.id).then(x => {
+      unsubscribeSnapshot = x.onSnapshot(doc => {
+          const data = doc;
+          // Set the app title to the list name if available
+          if (appTitleElem) {
+            appTitleElem.textContent = (data?.name) ? data.name : 'YASL';
+          }
+          if (data && Array.isArray(data.list)) {
+            renderList(data.list);
+          } else if (stringListElem) {
+            stringListElem.innerHTML = '';
+          }
+        });
+      });
     });
-  });
 
   // Observe visibility changes to main-list-view only
   const observer = new MutationObserver(() => {
@@ -132,6 +135,19 @@ export function setupItems(appState) {
     }
   }
 
+  // Helper to update the list in a transaction
+  async function updateListWith(updater) {
+    await db.runTransaction(async (transaction) => {
+      const doc = await transaction.get(currentListDocRef);
+      let currentList = [];
+      if (doc.exists && Array.isArray(doc.data().list)) {
+        currentList = doc.data().list;
+      }
+      const newList = updater(currentList, doc);
+      transaction.set(currentListDocRef, { ...doc.data(), list: newList });
+    });
+  }
+
   function renderListItem(item, parentElem, items) {
     const idx = item._idx;
     const li = document.createElement('li');
@@ -145,13 +161,8 @@ export function setupItems(appState) {
     checkbox.checked = !!item.checked;
     checkbox.style.marginRight = '0.5em';
     checkbox.onclick = async () => {
-      await db.runTransaction(async (transaction) => {
-        const doc = await transaction.get(currentListDocRef);
-        let currentList = [];
-        if (doc.exists && Array.isArray(doc.data().list)) {
-          currentList = doc.data().list;
-        }
-        const newList = currentList.map((it, i) => {
+      await updateListWith((currentList) =>
+        currentList.map((it, i) => {
           if (i !== idx) return it;
           const newChecked = !it.checked;
           return {
@@ -159,9 +170,8 @@ export function setupItems(appState) {
             checked: newChecked,
             urgent: newChecked ? false : it.urgent // if checked, urgent is false
           };
-        });
-        transaction.set(currentListDocRef, { ...doc.data(), list: newList });
-      });
+        })
+      );
     };
     li.appendChild(checkbox);
 
@@ -177,18 +187,11 @@ export function setupItems(appState) {
     flashBtn.style.padding = '0 0.25em';
     flashBtn.innerHTML = `<span class="flash-icon ${item.urgent ? 'urgent' : 'not-urgent'}"></span>`;
     flashBtn.onclick = async () => {
-      await db.runTransaction(async (transaction) => {
-        const doc = await transaction.get(currentListDocRef);
-        let currentList = [];
-        if (doc.exists && Array.isArray(doc.data().list)) {
-          currentList = doc.data().list;
-        }
-        // Flip urgent and set checked to false
-        const newList = currentList.map((it, i) =>
+      await updateListWith((currentList) =>
+        currentList.map((it, i) =>
           i === idx ? { ...it, urgent: !it.urgent, checked: false } : it
-        );
-        transaction.set(currentListDocRef, { ...doc.data(), list: newList });
-      });
+        )
+      );
     };
 
     // Remove button
@@ -202,15 +205,9 @@ export function setupItems(appState) {
         'Delete this item?',
         'Delete',
         async () => {
-          await db.runTransaction(async (transaction) => {
-            const doc = await transaction.get(currentListDocRef);
-            let currentList = [];
-            if (doc.exists && Array.isArray(doc.data().list)) {
-              currentList = doc.data().list;
-            }
-            const newList = currentList.filter((_, i) => i !== idx);
-            transaction.set(currentListDocRef, { ...doc.data(), list: newList });
-          });
+          await updateListWith((currentList) =>
+            currentList.filter((_, i) => i !== idx)
+          );
         }
       );
     };
