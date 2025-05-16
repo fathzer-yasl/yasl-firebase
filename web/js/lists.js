@@ -54,6 +54,7 @@ export function setupLists(appState) {
       if (selectListId && list.id === selectListId && !foundListToSelect) {
         foundListToSelect = true;
         setTimeout(() => {
+          console.log('Auto-selecting list:', list.id);
           nameSpan.click();
         }, 0);
       }
@@ -171,9 +172,6 @@ export function setupLists(appState) {
         // --- Clear last-list and currentListDocRef when leaving main-list-view ---
         localStorage.removeItem('yasl-last-list-' + user.uid); //TODO Probably at a better place elsewhere
       }
-      // Also clear currentListDocRef in items.js
-      if (window.clearCurrentListDocRef) window.clearCurrentListDocRef();
-      if (appTitleElem) appTitleElem.textContent = "YASL"; // Ensure title is reset
       window.renderUserLists();
       onListSelected(null);
     });

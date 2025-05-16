@@ -7,10 +7,9 @@ import { AppState } from './app-state.js';
 document.addEventListener('DOMContentLoaded', async () => {
   // Hide both panels initially
   const listsPanel = document.getElementById('lists-panel');
-  const mainListView = document.getElementById('main-list-view');
   const listsBtn = document.getElementById('lists-btn');
+  const editBtn = document.getElementById('edit-btn');
   listsPanel.style.display = 'none';
-  mainListView.style.display = 'none';
 
   const appState = new AppState();
 
@@ -24,12 +23,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   appState.addEventListener('listid-changed', (e) => {
     const listId = e.detail.listId;
     if (listId) {
-      mainListView.style.display = '';
       listsPanel.style.display = 'none';
       listsBtn.style.display = '';
     } else {
-      mainListView.style.display = 'none';
       listsBtn.style.display = 'none';
+      editBtn.style.display = 'none';
+      editBtn.onclick = null;
       if (appState.signedIn) listsPanel.style.display = '';
     }
   });
@@ -42,15 +41,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (lastListId) {
         window.renderUserLists(lastListId);
         listsPanel.style.display = 'none';
-        mainListView.style.display = '';
       } else {
         window.renderUserLists();
         listsPanel.style.display = '';
-        mainListView.style.display = 'none';
       }
     } else {
       listsPanel.style.display = 'none';
-      mainListView.style.display = 'none';
       listsBtn.style.display = 'none';
     }
   });

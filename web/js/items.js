@@ -4,46 +4,34 @@ let currentList = null;
 let unsubscribeSnapshot = null;
 let checkedGroupCollapsed = false;
 
-// Expose a global function to clear currentList and unsubscribe
-//TODO This function is probably useless
-window.clearCurrentListDocRef = function() {
-  if (unsubscribeSnapshot) {
-    unsubscribeSnapshot();
-    unsubscribeSnapshot = null;
-  }
-  currentList = null;
-  const appTitleElem = document.querySelector('.app-title');
-  if (appTitleElem) appTitleElem.textContent = 'YASL';
-};
-
-// Helper to update the list in a transaction
-async function updateListWith(updater) {
-  const newList = updater(currentList.list);
-  currentList.list = newList;
-  await window.db.updateList(currentList);
-}
-
 export function setupItems(appState) {
+  // Helper to update the list in a transaction
+  async function updateListWith(updater) {
+    const newList = updater(currentList.list);
+    currentList.list = newList;
+    await window.db.updateList(currentList);
+  }
+
   const stringListElem = document.getElementById('item-list');
   const addItemForm = document.getElementById('add-item-form');
   const addItemInput = document.getElementById('add-item');
   const appTitleElem = document.querySelector('.app-title');
   const mainListView = document.getElementById('main-list-view');
+  const editBtn = document.getElementById('edit-btn');
 
   // Listen to AppState for list selection
   appState.addEventListener('listid-changed', (e) => {
-    const docRef = e.detail.listId;
+    const listId = e.detail.listId;
     if (unsubscribeSnapshot) {
       unsubscribeSnapshot();
       unsubscribeSnapshot = null;
     }
-    if (!docRef) {
-      if (appTitleElem) appTitleElem.textContent = 'YASL';
-      if (mainListView) mainListView.style.display = 'none'; // Hide the whole items panel
+    if (!listId) {
+      mainListView.style.display = 'none'; // Hide the whole items panel
       return;
     }
-    if (mainListView) mainListView.style.display = ''; // Show the whole items panel
-    window.db.getList(docRef).then(x => {
+    mainListView.style.display = ''; // Show the whole items panel
+    window.db.getList(listId).then(x => {
       unsubscribeSnapshot = x.onSnapshot(doc => {
           const data = doc;
           // Set the app title to the list name if available
@@ -51,6 +39,23 @@ export function setupItems(appState) {
             appTitleElem.textContent = (data?.name) ? data.name : 'YASL';
           }
           if (data && Array.isArray(data.list)) {
+            if (!data.guests.includes(appState.user.email)) {
+              editBtn.style.display = '';
+              // Attach delete handler for current list
+              editBtn.onclick = () => {
+                showConfirmDialog(
+                  `Are you sure you want to delete the list "${data.name || data.id}"? This cannot be undone.`,
+                  'Delete',
+                  async () => {
+                    await window.db.deleteList(data.id);
+                    appState.setListId(null);
+                  }
+                );
+              };
+            } else {
+              editBtn.style.display = 'none';
+              editBtn.onclick = null;
+            }
             renderList(data.list);
           } else if (stringListElem) {
             stringListElem.innerHTML = '';
