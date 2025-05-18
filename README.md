@@ -13,7 +13,7 @@ A simple JavaScript web app that stores a shopping list in Firestore and updates
 
 ## Limitations
 
-- Sharing, renaming and deleting lists requires to manually edit the database.
+- Sharing, and renaming lists requires to manually edit the database.
 - Renaming list items requires to manually edit the database (or to delete, and create them again).
 
 ## Setup Instructions

@@ -13,8 +13,8 @@ export async function setupAuth(appState) {
     window.db.signout();
   });
 
-  appState.addEventListener('user-changed', (e) => {
-    const user = e.detail.user;
+  appState.addEventListener(appState.event(), (e) => {
+    const user = e.detail.state.user;
     if (user) {
       signInBtn.style.display = 'none';
       signOutBtn.style.display = 'inline-block';
@@ -25,7 +25,6 @@ export async function setupAuth(appState) {
       signOutBtn.style.display = 'none';
       userNameElem.textContent = '';
       userEmailElem.textContent = '';
-      appState.setListId(null); // Ensure no list is selected on sign out
     }
   });
 }

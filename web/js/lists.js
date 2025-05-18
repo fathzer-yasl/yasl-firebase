@@ -1,29 +1,53 @@
-export function setupLists(appState) {
-  const appTitleElem = document.querySelector('.app-title');
+import { AppState } from "./app-state";
 
-  window.renderUserLists = async function(selectListId = null) {
-    const ownedListsDiv = document.getElementById('user-owned-lists');
-    const sharedListsDiv = document.getElementById('user-shared-lists');
+/**
+ * Registers the lists panel and its functionality.
+ * @param {AppState} appState 
+ */
+export function setupLists(appState) {
+  const listsPanel = document.getElementById('lists-panel');
+  const listsBtn = document.getElementById('lists-btn');
+  const ownedListsDiv = document.getElementById('user-owned-lists');
+  const sharedListsDiv = document.getElementById('user-shared-lists');
+
+  // Listen to AppState for list selection
+  appState.addEventListener(appState.event(), (e) => {
+    const listId = appState.listId;
+    listsBtn.style.display = listId ? '' : 'none'; // Hide the lists button
+    if (appState.user && !listId) {
+      renderUserLists();
+    } else {
+      showListsPanel(false);
+    }
+  });
+
+  function showListsPanel(visible) {
+    listsPanel.style.display = visible ? '' : 'none';
+    if (!visible) {
+      clearUsersLists();
+    }
+  }
+
+  function clearUsersLists() {
+    ownedListsDiv.innerHTML = '';
+    sharedListsDiv.innerHTML = '';
+  }
+
+  async function renderUserLists() {
     const ownedSection = document.getElementById('user-owned-lists-section');
     const sharedSection = document.getElementById('user-shared-lists-section');
     const separator = document.getElementById('user-lists-separator');
     const userListsContainer = document.getElementById('user-lists-container');
     if (!ownedListsDiv || !sharedListsDiv || !ownedSection || !sharedSection) return;
+
     userListsContainer.style.display = 'none';
-    if (appTitleElem) appTitleElem.textContent = "YASL";
-
-    ownedListsDiv.innerHTML = '';
-    sharedListsDiv.innerHTML = '';
-    separator.style.display = 'none';
     let hasOwned = false, hasShared = false;
-    let foundListToSelect = false;
-
     const user = appState.user;
-    if (!user) return;
 
     // Query lists where user is in 'users' using FireDB abstraction
     const allLists = await window.db.getUserLists(user);
 
+    clearUsersLists();
     allLists.forEach(list => {
       const guestsArr = Array.isArray(list.guests) ? list.guests : list.users;
       const isOwner = !guestsArr.includes(user.email);
@@ -50,14 +74,6 @@ export function setupLists(appState) {
         hasShared = true;
         sharedListsDiv.appendChild(div);
       }
-      // Auto-select last list if needed
-      if (selectListId && list.id === selectListId && !foundListToSelect) {
-        foundListToSelect = true;
-        setTimeout(() => {
-          console.log('Auto-selecting list:', list.id);
-          nameSpan.click();
-        }, 0);
-      }
 
       function buildListFirstLine() {
         const nameLine = document.createElement('div');
@@ -73,7 +89,6 @@ export function setupLists(appState) {
           const mainListView = document.getElementById('main-list-view');
           listsPanel.style.display = 'none';
           mainListView.style.display = '';
-          setLastListId(list.id);
           onListSelected(list.id);
         };
         nameLine.appendChild(nameSpan);
@@ -130,17 +145,9 @@ export function setupLists(appState) {
       ownedSection.style.display = '';
       sharedSection.style.display = 'none';
     }
-    if (hasOwned && hasShared) {
-      separator.style.display = 'block';
-    }
-    // If selectListId was provided but not found, show lists panel
-    if (selectListId && !foundListToSelect) {
-      const listsPanel = document.getElementById('lists-panel');
-      const mainListView = document.getElementById('main-list-view');
-      listsPanel.style.display = 'block';
-      mainListView.style.display = 'none';
-    }
+    separator.style.display = hasOwned && hasShared ? 'block':'none';
     userListsContainer.style.display = 'block';
+    showListsPanel(true);
   };
 
   // Add new list (form submit event)
@@ -153,36 +160,16 @@ export function setupLists(appState) {
       newListNameInput.value = '';
       if (!appState.user || !name) return;
       const id = await window.db.createList(name);
-      setLastListId(id);
-      window.renderUserLists(id);
+      onListSelected(id);
     });
   }
 
   // Show/hide main-list-view and lists-panel when lists button is clicked
-  const listsBtn = document.getElementById('lists-btn');
-  const listsPanel = document.getElementById('lists-panel');
   const mainListView = document.getElementById('main-list-view');
   if (listsBtn && listsPanel && mainListView) {
     listsBtn.addEventListener('click', () => {
-      listsPanel.style.display = 'block';
-      mainListView.style.display = 'none';
-      // Set flag so reload stays on lists-panel
-      const user = appState.user;
-      if (user) {
-        // --- Clear last-list and currentListDocRef when leaving main-list-view ---
-        localStorage.removeItem('yasl-last-list-' + user.uid); //TODO Probably at a better place elsewhere
-      }
-      window.renderUserLists();
       onListSelected(null);
     });
-  }
-
-  // Helper: set last list id in localStorage
-  function setLastListId(listId) {
-    const user = appState.user;
-    if (user && listId) {
-      localStorage.setItem('yasl-last-list-' + user.uid, listId);
-    }
   }
 
   // When a list is selected (replace your current selection logic):

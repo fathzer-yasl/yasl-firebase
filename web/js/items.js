@@ -1,9 +1,14 @@
+import { AppState } from "./app-state.js";
 import { showConfirmDialog } from './confirm.js';
 
 let currentList = null;
 let unsubscribeSnapshot = null;
 let checkedGroupCollapsed = false;
 
+/**
+ * Sets up the items panel and its functionality.
+ * @param {AppState} appState 
+ */
 export function setupItems(appState) {
   // Helper to update the list in a transaction
   async function updateListWith(updater) {
@@ -20,14 +25,15 @@ export function setupItems(appState) {
   const editBtn = document.getElementById('edit-btn');
 
   // Listen to AppState for list selection
-  appState.addEventListener('listid-changed', (e) => {
-    const listId = e.detail.listId;
+  appState.addEventListener(appState.event(), (e) => {
+    const listId = e.detail.state.listId;
     if (unsubscribeSnapshot) {
       unsubscribeSnapshot();
       unsubscribeSnapshot = null;
     }
     if (!listId) {
       mainListView.style.display = 'none'; // Hide the whole items panel
+      editBtn.style.display = 'none';
       return;
     }
     mainListView.style.display = ''; // Show the whole items panel
