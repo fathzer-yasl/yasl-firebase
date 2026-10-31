@@ -1,8 +1,20 @@
-import { appRelease } from './release.js';
-
 const THEME_KEY = 'yasl-theme';
 const LEGACY_THEME_KEY = 'yasl-darkmode';
 const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+function getTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved) return saved;
+  // Migrate the legacy boolean preference if present
+  const legacy = localStorage.getItem(LEGACY_THEME_KEY);
+  if (legacy !== null) {
+    const mode = legacy === '1' ? 'dark' : 'light';
+    localStorage.setItem(THEME_KEY, mode);
+    localStorage.removeItem(LEGACY_THEME_KEY);
+    return mode;
+  }
+  return 'system';
+}
 
 export function setupSettings(appState) {
   const darkModeCSS = document.getElementById('dark-mode-css');
@@ -10,20 +22,6 @@ export function setupSettings(appState) {
   const settingsBtn = document.getElementById('settings-btn');
   const settingsModal = document.getElementById('settings-modal');
   const settingsClose = document.getElementById('settings-close');
-
-  function getTheme() {
-    const saved = localStorage.getItem(THEME_KEY);
-    if (saved) return saved;
-    // Migrate the legacy boolean preference if present
-    const legacy = localStorage.getItem(LEGACY_THEME_KEY);
-    if (legacy !== null) {
-      const mode = legacy === '1' ? 'dark' : 'light';
-      localStorage.setItem(THEME_KEY, mode);
-      localStorage.removeItem(LEGACY_THEME_KEY);
-      return mode;
-    }
-    return 'system';
-  }
 
   function applyTheme(mode) {
     const dark = mode === 'dark' || (mode === 'system' && systemThemeQuery.matches);
@@ -53,9 +51,10 @@ export function setupSettings(appState) {
   systemThemeQuery.addEventListener('change', () => applyTheme(getTheme()));
 
   // Set app name and version in settings modal
+  // __APP_RELEASE__ is a build-time constant injected by vite.config.js
   const infoDiv = document.getElementById('app-version-info');
   if (infoDiv) {
-    infoDiv.textContent = `YASL v${appRelease}`;
+    infoDiv.textContent = `YASL v${__APP_RELEASE__}`;
   }
 
   if (settingsBtn && settingsModal) {

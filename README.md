@@ -164,7 +164,7 @@ Releases are published to [Docker Hub](https://hub.docker.com/) by a GitHub Acti
    ```
 
 2. The workflow then automatically:
-   - generates `web/js/release.js` from the tag (this is the version the app displays in Settings),
+   - injects the tag as the application version (this is the version the app displays in Settings),
    - builds the distribution package with Vite,
    - builds the Docker image and pushes it to Docker Hub as `fathzer/yasl:<tag>`,
    - updates the floating `fathzer/yasl:latest` tag.
@@ -177,7 +177,7 @@ Releases are published to [Docker Hub](https://hub.docker.com/) by a GitHub Acti
 
 ### Version numbering
 
-There is nothing to bump manually in the code: the git tag is the single source of truth. The committed `web/js/release.js` file is only a placeholder used for development and is overwritten at release time.
+There is nothing to bump manually in the code: the git tag is the single source of truth. In development builds (no `APP_RELEASE` environment variable), the version shown is `dev-<commit sha>` or `dev`.
 
 ### Build check on branches
 
