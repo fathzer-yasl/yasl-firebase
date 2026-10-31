@@ -7,81 +7,93 @@
   <link rel="stylesheet" href="/style.css" />
   <link rel="stylesheet" href="/dark-mode.css" id="dark-mode-css" disabled />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <!-- Firebase App (the core Firebase SDK) -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <!-- Add Auth SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <!-- Add Firestore SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="theme-color" content="#1976d2" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="YASL" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <script src="/db.js"></script>
 </head>
 <body>
   <div class="container">
     <div id="top-bar">
       <div class="app-title">YASL</div>
       <div style="margin-left:auto; display:flex; align-items:center;">
-        <button id="lists-btn" aria-label="Lists" style="display:none;">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="3" y="7" width="18" height="2" rx="1" fill="#1976d2"/>
-            <rect x="5" y="11" width="14" height="2" rx="1" fill="#1976d2"/>
-            <rect x="7" y="15" width="10" height="2" rx="1" fill="#1976d2"/>
-          </svg>
+        <button id="lists-btn" aria-label="Lists" data-i18n-aria="ariaLists" style="display:none;">
+          <span class="lists-icon topbar-icon"></span>
         </button>
-        <button id="settings-btn" aria-label="Settings">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="10" stroke="#1976d2" stroke-width="2" fill="none"/>
-            <path d="M12 8a4 4 0 100 8 4 4 0 000-8zm0-5v2m0 14v2m9-9h-2M5 12H3m15.07-6.07l-1.41 1.41M6.34 17.66l-1.41 1.41m12.02 0l-1.41-1.41M6.34 6.34L4.93 4.93" stroke="#1976d2" stroke-width="2" stroke-linecap="round"/>
-          </svg>
+        <button id="edit-btn" aria-label="Edit" data-i18n-aria="ariaEditList" style="display:none;">
+          <span class="edit-icon topbar-icon"></span>
+        </button>
+        <button id="settings-btn" aria-label="Settings" data-i18n-aria="ariaSettings">
+          <span class="settings-icon topbar-icon"></span>
         </button>
       </div>
     </div>
     <div id="auth-section">
-      <button id="sign-in-btn" class="text-btn">Sign in with Google</button>
+      <button id="sign-in-btn" class="text-btn" data-i18n="signIn">Sign in</button>
     </div>
     <!-- Settings modal dialog -->
     <div id="settings-modal" class="settings-modal" style="display:none;">
       <div class="settings-modal-content">
-        <button id="settings-close" aria-label="Close settings" class="settings-close">&times;</button>
-        <div style="margin-bottom:1em;">
-          <input type="checkbox" id="dark-mode-toggle">
-          <label for="dark-mode-toggle" style="font-size:0.97em;cursor:pointer;">Dark mode</label>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:1em;gap:1em;">
-          <div id="settings-user-info">
-            <span id="user-name"></span>
-            <span id="user-email"></span>
+        <button id="settings-close" aria-label="Close settings" data-i18n-aria="ariaCloseSettings" class="settings-close">&times;</button>
+        <div class="settings-card">
+          <div class="settings-card-title" data-i18n="settingsTheme">Theme</div>
+          <div class="theme-options">
+            <label><input type="radio" name="theme" value="light"> <span data-i18n="themeLight">Light</span></label>
+            <label><input type="radio" name="theme" value="dark"> <span data-i18n="themeDark">Dark</span></label>
+            <label><input type="radio" name="theme" value="system"> <span data-i18n="themeSystem">System</span></label>
           </div>
-          <button id="sign-out-btn" aria-label="Sign out" class="sign-out-btn">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M16 17L21 12L16 7" stroke="#1976d2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M21 12H9" stroke="#1976d2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M12 19V17C12 15.8954 11.1046 15 10 15H5C3.89543 15 3 14.1046 3 13V11C3 9.89543 3.89543 9 5 9H10C11.1046 9 12 8.10457 12 7V5" stroke="#1976d2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
         </div>
-        <div id="app-version-info" style="font-size:0.75em;color:#888;margin-top:0.5em;text-align:right;width:100%;"></div>
+        <div class="settings-card">
+          <div class="settings-card-title" data-i18n="settingsLanguage">Language</div>
+          <div class="theme-options">
+            <label><input type="radio" name="language" value="en"> <span data-i18n="langEnglish">English</span></label>
+            <label><input type="radio" name="language" value="fr"> <span data-i18n="langFrench">Français</span></label>
+            <label><input type="radio" name="language" value="system"> <span data-i18n="langSystem">System</span></label>
+          </div>
+        </div>
+        <div class="settings-card">
+          <div class="settings-card-title" data-i18n="settingsItemEdit">Item editing</div>
+          <div class="theme-options">
+            <label><input type="radio" name="item-edit-mode" value="button"> <span data-i18n="itemEditButton">Edit button</span></label>
+            <label><input type="radio" name="item-edit-mode" value="longpress"> <span data-i18n="itemEditLongPress">Long press</span></label>
+          </div>
+        </div>
+        <div class="settings-card">
+          <div class="settings-card-title" data-i18n="settingsConnection">Connection</div>
+          <div id="settings-connection">
+            <div id="settings-user-info">
+              <span id="user-name"></span>
+              <span id="user-email"></span>
+            </div>
+            <button id="sign-out-btn" aria-label="Sign out" data-i18n-aria="ariaSignOut" class="sign-out-btn">
+              <span class="signout-icon"></span>
+            </button>
+          </div>
+        </div>
+        <div id="app-version-info"></div>
       </div>
     </div>
     <!-- List of available lists -->
     <div id="lists-panel" style="display:none;">
       <form id="add-list-form">
-        <input type="text" id="new-list-name" placeholder="List name..." style="flex:1;" />
-        <button id="add-list-btn" type="submit" aria-label="Add list">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle">
-            <rect x="9" y="4" width="2" height="12" fill="#1976d2"/>
-            <rect x="4" y="9" width="12" height="2" fill="#1976d2"/>
-          </svg>
+        <input type="text" id="new-list-name" placeholder="List name..." data-i18n-placeholder="listNamePlaceholder" style="flex:1;" />
+        <button id="add-list-btn" type="submit" aria-label="Add list" data-i18n-aria="ariaAddList">
+          <span class="plus-icon"></span>
         </button>
       </form>
       <div id="user-lists-container">
         <div id="user-owned-lists-section">
-          <div class="lists-title">My lists</div>
+          <div class="lists-title" data-i18n="myLists">My lists</div>
           <div id="user-owned-lists"></div>
         </div>
         <div id ="user-lists-separator">
           <hr>
         </div>
         <div id="user-shared-lists-section" style="margin-top:1.2em;">
-          <div class="lists-title">Shared with me</div>
+          <div class="lists-title" data-i18n="sharedWithMe">Shared with me</div>
           <div id="user-shared-lists"></div>
         </div>
       </div>
@@ -89,12 +101,9 @@
     <!-- Items list -->
     <div id="main-list-view" style="display:none;">
       <form id="add-item-form">
-        <input type="text" id="add-item" placeholder="Add an item..." required />
-        <button type="submit" aria-label="Add">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle">
-            <rect x="9" y="4" width="2" height="12" fill="#1976d2"/>
-            <rect x="4" y="9" width="12" height="2" fill="#1976d2"/>
-          </svg>
+        <input type="text" id="add-item" placeholder="Add an item..." data-i18n-placeholder="addItemPlaceholder" required />
+        <button type="submit" aria-label="Add" data-i18n-aria="ariaAdd">
+          <span class="plus-icon"></span>
         </button>
       </form>
       <ul id="item-list"></ul>
@@ -104,13 +113,12 @@
       <div class="settings-modal-content" style="min-width:220px;max-width:90vw;">
         <div class="remove-modal-title"></div>
         <div class="remove-modal-actions">
-          <button id="remove-cancel-btn" class="text-btn" type="button">Cancel</button>
+          <button id="remove-cancel-btn" class="text-btn" type="button" data-i18n="cancel">Cancel</button>
           <button id="remove-confirm-btn" class="text-btn" type="button"></button>
         </div>
       </div>
     </div>
   </div>
-  <script src="config/firebaseConfig.js"></script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

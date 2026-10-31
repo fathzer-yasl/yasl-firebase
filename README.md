@@ -9,12 +9,10 @@ A simple JavaScript web app that stores a shopping list in Firestore and updates
 - Add/remove items to lists.
 - Check/uncheck items.
 - Mark items as urgent.
+- Rename or delete items via an edit button or a long press (configurable in Settings).
+- Share lists with other users, optionally granting them admin permissions.
+- Rename lists, delete them.
 - All changes to items list are synchronized instantly across all open, signed-in instances.
-
-## Limitations
-
-- Sharing, renaming and deleting lists requires to manually edit the database.
-- Renaming list items requires to manually edit the database (or to delete, and create them again).
 
 ## Setup Instructions
 
@@ -112,8 +110,10 @@ docker run -d -p 8080:8080 \
      - Open a terminal in your project directory.
      - Run (for Python 3):
         ```
-        python -m http.server 8080
+        cd dist
+        python3 -m http.server 8080
         ```
+        or `npm run dev` from the root directory.
      - Open your browser and go to [http://localhost:8080](http://localhost:8080)
 
 ## How to build the distribution package (with Vite)
@@ -148,6 +148,42 @@ Then:
 ```sh
 docker build -t fathzer/yasl -f docker/Dockerfile .
 ```
+
+## How to deploy a new release
+
+Releases are published to [Docker Hub](https://hub.docker.com/) by a GitHub Actions workflow ([`.github/workflows/dockerbuild.yml`](.github/workflows/dockerbuild.yml)).
+
+### Publish a release
+
+1. **Create and push a git tag** with the version you want to publish — typically by creating a [GitHub release](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository), or manually:
+   ```sh
+   git tag 0.0.4
+   git push origin 0.0.4
+   ```
+
+2. The workflow then automatically:
+   - injects the tag as the application version (this is the version the app displays in Settings),
+   - builds the distribution package with Vite,
+   - builds the Docker image and pushes it to Docker Hub as `fathzer/yasl:<tag>`,
+   - updates the floating `fathzer/yasl:latest` tag.
+
+### Tag naming rules
+
+- The tag is used as the Docker image tag: it must only contain letters, digits, `_`, `.` and `-` (no `/`).
+- A leading `v` is stripped: pushing `v0.0.4` or `0.0.4` both publish `yasl:0.0.4`.
+- `latest` is updated on **every** release, so publishing an older tag (e.g. a hotfix on a previous version) also moves `latest`.
+
+### Version numbering
+
+There is nothing to bump manually in the code: the git tag is the single source of truth. In development builds (no `APP_RELEASE` environment variable), the version shown is `dev-<commit sha>` or `dev`.
+
+### Build check on branches
+
+Every push to any branch runs a build check (Vite build + Docker image build, without pushing to Docker Hub). It requires no secret, so it also works on forks.
+
+### Forks
+
+The release job requires the `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` repository secrets. On a fork without them, the release job simply fails while the build check still passes. If you set these secrets on your fork, releases will be pushed to your own Docker Hub account.
 
 ## How to run the app during development
 

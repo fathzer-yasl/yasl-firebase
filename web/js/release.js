@@ -1,1 +1,0 @@
-export const appRelease = "0.0.3-20250514-0824";
