@@ -4,6 +4,11 @@ import { setupItems } from './items.js';
 import { setupSettings } from './settings.js';
 import { AppState } from './app-state.js';
 
+// Register the service worker (PWA installability + asset caching)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
 
   const appState = new AppState();
