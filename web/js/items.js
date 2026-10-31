@@ -1,6 +1,6 @@
 import { AppState } from "./app-state.js";
-import { showConfirmDialog } from './confirm.js';
 import { openEditListDialog } from './edit-list-dialog.js';
+import { openEditItemDialog } from './edit-item-dialog.js';
 
 let currentList = null;
 let unsubscribeSnapshot = null;
@@ -183,22 +183,25 @@ export function setupItems(appState) {
       };
     }
 
-    // Remove button
+    // Edit button (rename/delete via dialog)
     const btn = document.createElement('button');
-    btn.setAttribute('aria-label', 'Remove');
-    btn.className = 'remove-btn';
+    btn.setAttribute('aria-label', 'Edit item');
     btn.style.marginLeft = '0.25em';
-    btn.innerHTML = `<span class="remove-icon"></span>`;
+    btn.style.padding = '0 0.25em';
+    btn.innerHTML = `<span class="edit-icon item-edit-icon"></span>`;
     btn.onclick = () => {
-      showConfirmDialog(
-        'Delete this item?',
-        'Delete',
-        async () => {
+      openEditItemDialog(item.name, {
+        onRename: async (newName) => {
+          await updateListWith((currentList) =>
+            currentList.map((it, i) => i === idx ? { ...it, name: newName } : it)
+          );
+        },
+        onDelete: async () => {
           await updateListWith((currentList) =>
             currentList.filter((_, i) => i !== idx)
           );
         }
-      );
+      });
     };
 
     // Right-side button group
