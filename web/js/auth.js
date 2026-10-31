@@ -6,6 +6,12 @@ export async function setupAuth(appState) {
 
   window.db.register(appState);
 
+  // Use the backend-provided sign-in label when available
+  // (the generic data-i18n label is the fallback)
+  if (signInBtn && window.db.signInLabel) {
+    signInBtn.textContent = window.db.signInLabel;
+  }
+
   signInBtn?.addEventListener('click', () => {
     window.db.signIn();
   });
@@ -18,7 +24,7 @@ export async function setupAuth(appState) {
     if (user) {
       signInBtn.style.display = 'none';
       signOutBtn.style.display = 'inline-block';
-      userNameElem.textContent = user.displayName || '';
+      userNameElem.textContent = user.displayName || user.email || '';
       userEmailElem.textContent = user.email || '';
     } else {
       signInBtn.style.display = 'inline-block';

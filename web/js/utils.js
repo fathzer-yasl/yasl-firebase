@@ -1,11 +1,13 @@
-// Utility for long-press detection
-export function addLongPressListener(node, callback) {
+// Utility for long-press detection.
+// The optional filter receives the start event; returning false ignores that press.
+export function addLongPressListener(node, callback, filter) {
   let timer = null;
   let startX = null, startY = null;
   const threshold = 10; // px
 
   // Mouse events
   node.addEventListener('mousedown', (e) => {
+    if (filter && !filter(e)) return;
     startX = e.clientX;
     startY = e.clientY;
     timer = setTimeout(() => {
@@ -38,7 +40,7 @@ export function addLongPressListener(node, callback) {
 
   // Touch events for mobile
   node.addEventListener('touchstart', (e) => {
-    if (e.touches.length === 1) {
+    if (e.touches.length === 1 && (!filter || filter(e))) {
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
       timer = setTimeout(() => {

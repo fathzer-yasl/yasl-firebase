@@ -1,5 +1,6 @@
 {
-  "signIn": "Se connecter avec Google",
+  "signIn": "Se connecter",
+  "signInGoogle": "Se connecter avec Google",
   "signInFailed": "Échec de la connexion : ",
   "settingsTheme": "Thème",
   "themeLight": "Clair",
@@ -9,6 +10,9 @@
   "langEnglish": "English",
   "langFrench": "Français",
   "langSystem": "Système",
+  "settingsItemEdit": "Modification des articles",
+  "itemEditButton": "Bouton modifier",
+  "itemEditLongPress": "Appui long",
   "settingsConnection": "Connexion",
   "myLists": "Mes listes",
   "sharedWithMe": "Partagées avec moi",

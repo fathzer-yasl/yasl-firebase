@@ -56,6 +56,8 @@
 
     /**
      * Registers the application state and sets up an authentication state observer.
+     * The user object delivered to appState has a backend-agnostic shape:
+     * { uid: string, email: string, displayName: string|null }.
      * @param {AppState} appState - The application state object that manages user data
      */
     register(appState) {
@@ -67,8 +69,20 @@
       }
       this.#appState = appState;
       this.#auth.onAuthStateChanged(user => {
-        this.#appState.setUser(user);
+        this.#appState.setUser(user === null ? null : {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName
+        });
       });
+    }
+
+    /**
+     * Optional label for the sign-in button, supplied by the backend.
+     * The UI falls back to a generic translated label when not provided.
+     */
+    get signInLabel() {
+      return window.t('signInGoogle');
     }
 
     /**

@@ -1,11 +1,14 @@
 import { AppState } from "./app-state.js";
 import { openEditListDialog } from './edit-list-dialog.js';
 import { openEditItemDialog } from './edit-item-dialog.js';
+import { getItemEditMode, ITEM_EDIT_MODE_EVENT } from './settings.js';
+import { addLongPressListener } from './utils.js';
 import { t } from './i18n.js';
 
 let currentList = null;
 let unsubscribeSnapshot = null;
 let checkedGroupCollapsed = false;
+let lastRenderedList = null;
 
 // Helper to update the list in a transaction
 async function updateListWith(updater) {
@@ -59,6 +62,13 @@ export function setupItems(appState) {
       });
     });
 
+  // Re-render when the item edit mode changes in settings
+  window.addEventListener(ITEM_EDIT_MODE_EVENT, () => {
+    if (lastRenderedList) {
+      renderList(lastRenderedList.items, lastRenderedList.urgentAllowed);
+    }
+  });
+
   // Observe visibility changes to main-list-view only
   const observer = new MutationObserver(() => {
     if (mainListView?.style.display === 'none') {
@@ -85,6 +95,7 @@ export function setupItems(appState) {
 
   // Render the list of items (restored original interactive version)
   function renderList(items, urgentAllowed) {
+    lastRenderedList = { items, urgentAllowed };
     stringListElem.innerHTML = '';
     // Split into groups
     const unchecked = items
@@ -184,13 +195,8 @@ export function setupItems(appState) {
       };
     }
 
-    // Edit button (rename/delete via dialog)
-    const btn = document.createElement('button');
-    btn.setAttribute('aria-label', t('ariaEditItem'));
-    btn.style.marginLeft = '0.25em';
-    btn.style.padding = '0 0.25em';
-    btn.innerHTML = `<span class="edit-icon item-edit-icon"></span>`;
-    btn.onclick = () => {
+    // Item edition (rename/delete via dialog)
+    const openEditor = () => {
       openEditItemDialog(item.name, {
         onRename: async (newName) => {
           await updateListWith((currentList) =>
@@ -205,11 +211,26 @@ export function setupItems(appState) {
       });
     };
 
+    // Edit trigger: an edit button or a long press on the item, depending on settings
+    let btn = null;
+    if (getItemEditMode() === 'longpress') {
+      li.style.userSelect = 'none';
+      li.oncontextmenu = (e) => e.preventDefault();
+      addLongPressListener(li, openEditor, (e) => !e.target.closest('button, input'));
+    } else {
+      btn = document.createElement('button');
+      btn.setAttribute('aria-label', t('ariaEditItem'));
+      btn.style.marginLeft = '0.25em';
+      btn.style.padding = '0 0.25em';
+      btn.innerHTML = `<span class="edit-icon item-edit-icon"></span>`;
+      btn.onclick = openEditor;
+    }
+
     // Right-side button group
     const rightGroup = document.createElement('div');
     rightGroup.className = 'list-actions';
     if (flashBtn) rightGroup.appendChild(flashBtn);
-    rightGroup.appendChild(btn);
+    if (btn) rightGroup.appendChild(btn);
     li.appendChild(rightGroup);
     parentElem.appendChild(li);
   }

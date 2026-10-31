@@ -2,7 +2,19 @@ import { getLanguagePref, setLanguagePref } from './i18n.js';
 
 const THEME_KEY = 'yasl-theme';
 const LEGACY_THEME_KEY = 'yasl-darkmode';
+const ITEM_EDIT_MODE_KEY = 'yasl-item-edit-mode';
+export const ITEM_EDIT_MODE_EVENT = 'item-edit-mode-changed';
 const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+// Returns how list items are edited: 'button' (default) or 'longpress'
+export function getItemEditMode() {
+  return localStorage.getItem(ITEM_EDIT_MODE_KEY) || 'button';
+}
+
+function setItemEditMode(mode) {
+  localStorage.setItem(ITEM_EDIT_MODE_KEY, mode);
+  window.dispatchEvent(new Event(ITEM_EDIT_MODE_EVENT));
+}
 
 function getTheme() {
   const saved = localStorage.getItem(THEME_KEY);
@@ -58,6 +70,15 @@ export function setupSettings(appState) {
     radio.checked = radio.value === langPref;
     radio.addEventListener('change', () => {
       if (radio.checked) setLanguagePref(radio.value);
+    });
+  });
+
+  // Item edit mode preference: check the matching radio, re-render items on change
+  const itemEditMode = getItemEditMode();
+  document.querySelectorAll('input[name="item-edit-mode"]').forEach(radio => {
+    radio.checked = radio.value === itemEditMode;
+    radio.addEventListener('change', () => {
+      if (radio.checked) setItemEditMode(radio.value);
     });
   });
 

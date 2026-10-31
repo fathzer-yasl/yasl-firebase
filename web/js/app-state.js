@@ -55,7 +55,9 @@ export class AppState extends EventTarget {
 
   /**
    * Sets the current user and dispatches an 'user-changed' event.
-   * @param {Object} user - The user object, this user must have a uid, email and a displayName attribute, or null
+   * The user object is backend-agnostic: it must have a non-empty uid and
+   * email; displayName is optional.
+   * @param {Object} user - The user object, or null
    */
   #validateUser(user) {
     if (typeof user !== 'object') {
@@ -67,8 +69,8 @@ export class AppState extends EventTarget {
     if (typeof user.email !== 'string' || user.email.trim() === '') {
       throw new TypeError('AppState.setUser: user must have a non-empty email attribute');
     }
-    if (typeof user.displayName !== 'string' || user.displayName.trim() === '') {
-      throw new TypeError('AppState.setUser: user must have a non-empty displayName attribute');
+    if (user.displayName != null && typeof user.displayName !== 'string') {
+      throw new TypeError('AppState.setUser: displayName must be a string when provided');
     }
   }
 
