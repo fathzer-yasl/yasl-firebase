@@ -1,21 +1,23 @@
 import { AppState } from "./app-state.js";
 import { showConfirmDialog } from './confirm.js';
+import { openEditListDialog } from './edit-list-dialog.js';
 
 let currentList = null;
 let unsubscribeSnapshot = null;
 let checkedGroupCollapsed = false;
 
+// Helper to update the list in a transaction
+async function updateListWith(updater) {
+  const newList = updater(currentList.list);
+  currentList.list = newList;
+  await window.db.updateList(currentList);
+}
+
 /**
  * Sets up the items panel and its functionality.
- * @param {AppState} appState 
+ * @param {AppState} appState
  */
 export function setupItems(appState) {
-  // Helper to update the list in a transaction
-  async function updateListWith(updater) {
-    const newList = updater(currentList.list);
-    currentList.list = newList;
-    await window.db.updateList(currentList);
-  }
 
   const stringListElem = document.getElementById('item-list');
   const addItemForm = document.getElementById('add-item-form');
@@ -45,24 +47,9 @@ export function setupItems(appState) {
             appTitleElem.textContent = (data?.name) ? data.name : 'YASL';
           }
           if (data && Array.isArray(data.list)) {
-            if (!data.guests.includes(appState.user.email)) {
-              editBtn.style.display = '';
-              // Attach delete handler for current list
-              editBtn.onclick = () => {
-                showConfirmDialog(
-                  `Are you sure you want to delete the list "${data.name || data.id}"? This cannot be undone.`,
-                  'Delete',
-                  async () => {
-                    await window.db.deleteList(data.id);
-                    appState.setListId(null);
-                  }
-                );
-              };
-            } else {
-              editBtn.style.display = 'none';
-              editBtn.onclick = null;
-            }
-            renderList(data.list);
+            editBtn.style.display = '';
+            editBtn.onclick = () => openEditListDialog(data, appState);
+            renderList(data.list, data.urgentEnabled !== false);
           } else if (stringListElem) {
             stringListElem.innerHTML = '';
           }
@@ -73,7 +60,7 @@ export function setupItems(appState) {
 
   // Observe visibility changes to main-list-view only
   const observer = new MutationObserver(() => {
-    if (mainListView && mainListView.style.display === 'none') {
+    if (mainListView?.style.display === 'none') {
       if (appTitleElem) appTitleElem.textContent = 'YASL';
     }
   });
@@ -96,7 +83,7 @@ export function setupItems(appState) {
   }
 
   // Render the list of items (restored original interactive version)
-  function renderList(items) {
+  function renderList(items, urgentAllowed) {
     stringListElem.innerHTML = '';
     // Split into groups
     const unchecked = items
@@ -116,7 +103,7 @@ export function setupItems(appState) {
     // Render unchecked group
     const uncheckedGroup = document.createElement('div');
     uncheckedGroup.className = 'group-box';
-    unchecked.forEach(item => renderListItem(item, uncheckedGroup, items));
+    unchecked.forEach(item => renderListItem(item, uncheckedGroup, items, urgentAllowed));
     stringListElem.appendChild(uncheckedGroup);
 
     // Render checked group with collapse/expand
@@ -135,19 +122,19 @@ export function setupItems(appState) {
       : `<span class="collapse-icon"></span>`;
     toggleBtn.onclick = () => {
       checkedGroupCollapsed = !checkedGroupCollapsed;
-      renderList(items);
+      renderList(items, urgentAllowed);
     };
     checkedHeader.appendChild(toggleBtn);
     stringListElem.appendChild(checkedHeader);
     if (!checkedGroupCollapsed) {
       const checkedGroup = document.createElement('div');
       checkedGroup.className = 'group-box';
-      checked.forEach(item => renderListItem(item, checkedGroup, items));
+      checked.forEach(item => renderListItem(item, checkedGroup, items, urgentAllowed));
       stringListElem.appendChild(checkedGroup);
     }
   }
 
-  function renderListItem(item, parentElem, items) {
+  function renderListItem(item, parentElem, items, urgentAllowed) {
     const idx = item._idx;
     const li = document.createElement('li');
     li.style.display = 'flex';
@@ -179,19 +166,22 @@ export function setupItems(appState) {
     span.textContent = item.name;
     li.appendChild(span);
 
-    // Flash icon for 'urgent'
-    const flashBtn = document.createElement('button');
-    flashBtn.setAttribute('aria-label', 'Toggle urgent');
-    flashBtn.className = 'flash-btn';
-    flashBtn.style.padding = '0 0.25em';
-    flashBtn.innerHTML = `<span class="flash-icon ${item.urgent ? 'urgent' : 'not-urgent'}"></span>`;
-    flashBtn.onclick = async () => {
-      await updateListWith((currentList) =>
-        currentList.map((it, i) =>
-          i === idx ? { ...it, urgent: !it.urgent, checked: false } : it
-        )
-      );
-    };
+    // Flash icon for 'urgent' (hidden when the list disables urgent items)
+    let flashBtn = null;
+    if (urgentAllowed) {
+      flashBtn = document.createElement('button');
+      flashBtn.setAttribute('aria-label', 'Toggle urgent');
+      flashBtn.className = 'flash-btn';
+      flashBtn.style.padding = '0 0.25em';
+      flashBtn.innerHTML = `<span class="flash-icon ${item.urgent ? 'urgent' : 'not-urgent'}"></span>`;
+      flashBtn.onclick = async () => {
+        await updateListWith((currentList) =>
+          currentList.map((it, i) =>
+            i === idx ? { ...it, urgent: !it.urgent, checked: false } : it
+          )
+        );
+      };
+    }
 
     // Remove button
     const btn = document.createElement('button');
@@ -214,7 +204,7 @@ export function setupItems(appState) {
     // Right-side button group
     const rightGroup = document.createElement('div');
     rightGroup.className = 'list-actions';
-    rightGroup.appendChild(flashBtn);
+    if (flashBtn) rightGroup.appendChild(flashBtn);
     rightGroup.appendChild(btn);
     li.appendChild(rightGroup);
     parentElem.appendChild(li);
