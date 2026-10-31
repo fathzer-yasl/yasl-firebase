@@ -1,7 +1,8 @@
 // Service worker: makes the app installable and caches static assets for
 // faster loads and offline shell display. Authentication and Firestore
 // still require connectivity.
-const CACHE = 'yasl-v1';
+// The placeholder is replaced by the release at build time (see vite.config.js)
+const CACHE = 'yasl-__APP_RELEASE__';
 
 // Runtime configuration must always be fetched fresh
 // (it is mounted as a volume at container startup in Docker)

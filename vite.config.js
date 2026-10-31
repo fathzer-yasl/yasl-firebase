@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 // Reads the current commit short sha from .git without spawning a process
 function gitShortSha() {
@@ -34,10 +35,25 @@ function appRelease() {
   return sha ? `dev-${sha}` : 'dev';
 }
 
+// Stamps the release into the service worker cache name so that each release starts with a fresh cache
+function stampServiceWorker(release) {
+  return {
+    name: 'stamp-service-worker',
+    apply: 'build',
+    closeBundle() {
+      const file = resolve('dist/sw.js');
+      writeFileSync(file, readFileSync(file, 'utf8').replace('__APP_RELEASE__', release));
+    },
+  };
+}
+
+const release = appRelease();
+
 export default defineConfig({
   define: {
-    __APP_RELEASE__: JSON.stringify(appRelease()),
+    __APP_RELEASE__: JSON.stringify(release),
   },
+  plugins: [stampServiceWorker(release)],
   root: 'web',
   publicDir: 'public',
   build: {
