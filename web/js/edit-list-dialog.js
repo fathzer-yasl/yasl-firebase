@@ -1,4 +1,5 @@
 import { showConfirmDialog } from './confirm.js';
+import { t } from './i18n.js';
 
 /**
  * Opens the list edition dialog (rename, urgent flag, users management, deletion).
@@ -81,7 +82,7 @@ export function openEditListDialog(list, appState) {
   }
 
   // --- List card: rename form + urgent toggle (read-only for guests) ---
-  const listCard = card('List');
+  const listCard = card(t('cardList'));
   const renameForm = document.createElement('form');
   renameForm.style.marginBottom = '0.8em';
   const nameInput = document.createElement('input');
@@ -91,7 +92,7 @@ export function openEditListDialog(list, appState) {
   nameInput.disabled = !isAdmin;
   const renameBtn = document.createElement('button');
   renameBtn.type = 'submit';
-  renameBtn.textContent = 'Rename';
+  renameBtn.textContent = t('rename');
   renameBtn.disabled = !isAdmin;
   renameForm.append(nameInput, renameBtn);
   renameForm.onsubmit = async (e) => {
@@ -113,21 +114,21 @@ export function openEditListDialog(list, appState) {
     await update({ urgentEnabled: urgentChk.checked });
     data.urgentEnabled = urgentChk.checked;
   };
-  urgentLabel.append(urgentChk, document.createTextNode('Items can be marked urgent'));
+  urgentLabel.append(urgentChk, document.createTextNode(t('itemsCanBeMarkedUrgent')));
   listCard.appendChild(urgentLabel);
   content.appendChild(listCard);
 
   // --- Users card: administrators always, guests management for admins only ---
-  const usersCard = card(isAdmin ? 'Users' : 'Administrators');
+  const usersCard = card(t(isAdmin ? 'cardUsers' : 'sectionAdministrators'));
   const adminsDiv = document.createElement('div');
   const guestsDiv = document.createElement('div');
   usersCard.appendChild(adminsDiv);
 
   function renderAdmins() {
     adminsDiv.innerHTML = '';
-    if (isAdmin) adminsDiv.appendChild(sectionTitle('Administrators'));
+    if (isAdmin) adminsDiv.appendChild(sectionTitle(t('sectionAdministrators')));
     admins().forEach(email => {
-      const actions = isAdmin && email === me ? [smallBtn('Demote', demoteSelf)] : [];
+      const actions = isAdmin && email === me ? [smallBtn(t('demote'), demoteSelf)] : [];
       adminsDiv.appendChild(userRow(email, actions));
     });
   }
@@ -149,8 +150,8 @@ export function openEditListDialog(list, appState) {
   function demoteSelf() {
     if (admins().length === 1) {
       showConfirmDialog(
-        'You are the last administrator of this list. Removing yourself will delete the list.',
-        'Delete list',
+        t('confirmLastAdmin'),
+        t('deleteList'),
         async () => {
           await window.db.deleteList(data.id);
           close();
@@ -165,17 +166,17 @@ export function openEditListDialog(list, appState) {
   }
   function renderGuests() {
     guestsDiv.innerHTML = '';
-    guestsDiv.appendChild(sectionTitle('Guests'));
+    guestsDiv.appendChild(sectionTitle(t('sectionGuests')));
     if (data.guests.length === 0) {
       const empty = document.createElement('div');
       empty.style.cssText = 'color:#888;font-size:0.9em;';
-      empty.textContent = 'No guests.';
+      empty.textContent = t('noGuests');
       guestsDiv.appendChild(empty);
     }
     data.guests.forEach(email => {
       guestsDiv.appendChild(userRow(email, [
-        smallBtn('Promote', () => updateGuest(email, 'promote')),
-        smallBtn('Remove', () => updateGuest(email, 'remove'))
+        smallBtn(t('promote'), () => updateGuest(email, 'promote')),
+        smallBtn(t('remove'), () => updateGuest(email, 'remove'))
       ]));
     });
   }
@@ -190,12 +191,12 @@ export function openEditListDialog(list, appState) {
     addForm.style.marginTop = '0.7em';
     const guestInput = document.createElement('input');
     guestInput.type = 'email';
-    guestInput.placeholder = 'Guest email...';
+    guestInput.placeholder = t('guestEmailPlaceholder');
     guestInput.required = true;
     guestInput.style.flex = '1';
     const addBtn = document.createElement('button');
     addBtn.type = 'submit';
-    addBtn.textContent = 'Add';
+    addBtn.textContent = t('add');
     addForm.append(guestInput, addBtn);
     addForm.onsubmit = async (e) => {
       e.preventDefault();
@@ -213,16 +214,16 @@ export function openEditListDialog(list, appState) {
   content.appendChild(usersCard);
 
   // --- Danger zone: delete the list for admins, leave it for guests ---
-  const dangerCard = card('Danger zone');
+  const dangerCard = card(t('dangerZone'));
   if (isAdmin) {
     const delBtn = document.createElement('button');
     delBtn.className = 'text-btn';
     delBtn.style.background = '#d32f2f';
-    delBtn.textContent = 'Delete list';
+    delBtn.textContent = t('deleteList');
     delBtn.onclick = () => {
       showConfirmDialog(
-        `Are you sure you want to delete the list "${data.name || data.id}"? This cannot be undone.`,
-        'Delete',
+        t('confirmDeleteList', { name: data.name || data.id }),
+        t('delete'),
         async () => {
           await window.db.deleteList(data.id);
           close();
@@ -236,11 +237,11 @@ export function openEditListDialog(list, appState) {
     const leaveBtn = document.createElement('button');
     leaveBtn.className = 'text-btn';
     leaveBtn.style.background = '#d32f2f';
-    leaveBtn.textContent = 'Leave list';
+    leaveBtn.textContent = t('leaveList');
     leaveBtn.onclick = () => {
       showConfirmDialog(
-        `Are you sure you want to leave the list "${data.name || data.id}"? An administrator will have to add you back.`,
-        'Leave',
+        t('confirmLeaveList', { name: data.name || data.id }),
+        t('leave'),
         async () => {
           data.users = data.users.filter(u => u !== me);
           data.guests = data.guests.filter(g => g !== me);

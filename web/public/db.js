@@ -78,7 +78,7 @@
     signIn() {
       const provider = new firebase.auth.GoogleAuthProvider();
       this.#auth.signInWithPopup(provider).catch(err => {
-        alert('Sign-in failed: ' + err.message);
+        alert(window.t('signInFailed') + err.message);
       });
     }
 

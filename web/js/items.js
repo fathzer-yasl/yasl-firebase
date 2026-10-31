@@ -1,6 +1,7 @@
 import { AppState } from "./app-state.js";
 import { openEditListDialog } from './edit-list-dialog.js';
 import { openEditItemDialog } from './edit-item-dialog.js';
+import { t } from './i18n.js';
 
 let currentList = null;
 let unsubscribeSnapshot = null;
@@ -115,7 +116,7 @@ export function setupItems(appState) {
     // Collapse/expand icon
     const toggleBtn = document.createElement('button');
     toggleBtn.setAttribute('id', 'toggle-checked');
-    toggleBtn.setAttribute('aria-label', checkedGroupCollapsed ? 'Expand completed' : 'Collapse completed');
+    toggleBtn.setAttribute('aria-label', checkedGroupCollapsed ? t('ariaExpandCompleted') : t('ariaCollapseCompleted'));
     toggleBtn.style.padding = '0 0.25em';
     toggleBtn.innerHTML = checkedGroupCollapsed
       ? `<span class="expand-icon"></span>`
@@ -170,7 +171,7 @@ export function setupItems(appState) {
     let flashBtn = null;
     if (urgentAllowed) {
       flashBtn = document.createElement('button');
-      flashBtn.setAttribute('aria-label', 'Toggle urgent');
+      flashBtn.setAttribute('aria-label', t('ariaToggleUrgent'));
       flashBtn.className = 'flash-btn';
       flashBtn.style.padding = '0 0.25em';
       flashBtn.innerHTML = `<span class="flash-icon ${item.urgent ? 'urgent' : 'not-urgent'}"></span>`;
@@ -185,7 +186,7 @@ export function setupItems(appState) {
 
     // Edit button (rename/delete via dialog)
     const btn = document.createElement('button');
-    btn.setAttribute('aria-label', 'Edit item');
+    btn.setAttribute('aria-label', t('ariaEditItem'));
     btn.style.marginLeft = '0.25em';
     btn.style.padding = '0 0.25em';
     btn.innerHTML = `<span class="edit-icon item-edit-icon"></span>`;

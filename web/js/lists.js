@@ -1,4 +1,5 @@
 import { AppState } from "./app-state";
+import { t } from './i18n.js';
 
 /**
  * Registers the lists panel and its functionality.
@@ -141,7 +142,7 @@ export function setupLists(appState) {
     ownedSection.style.display = hasOwned ? '' : 'none';
     sharedSection.style.display = hasShared ? '' : 'none';
     if (!hasOwned && !hasShared) {
-      ownedListsDiv.innerHTML = '<div style="color:#888;font-size:0.95em;">No lists found.</div>';
+      ownedListsDiv.innerHTML = `<div style="color:#888;font-size:0.95em;">${t('noLists')}</div>`;
       ownedSection.style.display = '';
       sharedSection.style.display = 'none';
     }

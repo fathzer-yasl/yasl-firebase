@@ -3,6 +3,7 @@ import { setupLists } from './lists.js';
 import { setupItems } from './items.js';
 import { setupSettings } from './settings.js';
 import { AppState } from './app-state.js';
+import { applyStaticStrings } from './i18n.js';
 
 // Register the service worker (PWA installability + asset caching)
 if ('serviceWorker' in navigator) {
@@ -10,6 +11,8 @@ if ('serviceWorker' in navigator) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+
+  applyStaticStrings();
 
   const appState = new AppState();
 

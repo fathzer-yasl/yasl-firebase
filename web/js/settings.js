@@ -1,3 +1,5 @@
+import { getLanguagePref, setLanguagePref } from './i18n.js';
+
 const THEME_KEY = 'yasl-theme';
 const LEGACY_THEME_KEY = 'yasl-darkmode';
 const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -49,6 +51,15 @@ export function setupSettings(appState) {
 
   // Re-apply when the OS theme changes (effective only in 'system' mode)
   systemThemeQuery.addEventListener('change', () => applyTheme(getTheme()));
+
+  // Language preference: check the matching radio, reload on change
+  const langPref = getLanguagePref();
+  document.querySelectorAll('input[name="language"]').forEach(radio => {
+    radio.checked = radio.value === langPref;
+    radio.addEventListener('change', () => {
+      if (radio.checked) setLanguagePref(radio.value);
+    });
+  });
 
   // Set app name and version in settings modal
   // __APP_RELEASE__ is a build-time constant injected by vite.config.js

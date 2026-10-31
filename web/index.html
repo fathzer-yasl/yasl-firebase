@@ -20,40 +20,48 @@
     <div id="top-bar">
       <div class="app-title">YASL</div>
       <div style="margin-left:auto; display:flex; align-items:center;">
-        <button id="lists-btn" aria-label="Lists" style="display:none;">
+        <button id="lists-btn" aria-label="Lists" data-i18n-aria="ariaLists" style="display:none;">
           <span class="lists-icon topbar-icon"></span>
         </button>
-        <button id="edit-btn" aria-label="Edit" style="display:none;">
+        <button id="edit-btn" aria-label="Edit" data-i18n-aria="ariaEditList" style="display:none;">
           <span class="edit-icon topbar-icon"></span>
         </button>
-        <button id="settings-btn" aria-label="Settings">
+        <button id="settings-btn" aria-label="Settings" data-i18n-aria="ariaSettings">
           <span class="settings-icon topbar-icon"></span>
         </button>
       </div>
     </div>
     <div id="auth-section">
-      <button id="sign-in-btn" class="text-btn">Sign in with Google</button>
+      <button id="sign-in-btn" class="text-btn" data-i18n="signIn">Sign in with Google</button>
     </div>
     <!-- Settings modal dialog -->
     <div id="settings-modal" class="settings-modal" style="display:none;">
       <div class="settings-modal-content">
-        <button id="settings-close" aria-label="Close settings" class="settings-close">&times;</button>
+        <button id="settings-close" aria-label="Close settings" data-i18n-aria="ariaCloseSettings" class="settings-close">&times;</button>
         <div class="settings-card">
-          <div class="settings-card-title">Theme</div>
+          <div class="settings-card-title" data-i18n="settingsTheme">Theme</div>
           <div class="theme-options">
-            <label><input type="radio" name="theme" value="light"> Light</label>
-            <label><input type="radio" name="theme" value="dark"> Dark</label>
-            <label><input type="radio" name="theme" value="system"> System</label>
+            <label><input type="radio" name="theme" value="light"> <span data-i18n="themeLight">Light</span></label>
+            <label><input type="radio" name="theme" value="dark"> <span data-i18n="themeDark">Dark</span></label>
+            <label><input type="radio" name="theme" value="system"> <span data-i18n="themeSystem">System</span></label>
           </div>
         </div>
         <div class="settings-card">
-          <div class="settings-card-title">Connection</div>
+          <div class="settings-card-title" data-i18n="settingsLanguage">Language</div>
+          <div class="theme-options">
+            <label><input type="radio" name="language" value="en"> <span data-i18n="langEnglish">English</span></label>
+            <label><input type="radio" name="language" value="fr"> <span data-i18n="langFrench">Français</span></label>
+            <label><input type="radio" name="language" value="system"> <span data-i18n="langSystem">System</span></label>
+          </div>
+        </div>
+        <div class="settings-card">
+          <div class="settings-card-title" data-i18n="settingsConnection">Connection</div>
           <div id="settings-connection">
             <div id="settings-user-info">
               <span id="user-name"></span>
               <span id="user-email"></span>
             </div>
-            <button id="sign-out-btn" aria-label="Sign out" class="sign-out-btn">
+            <button id="sign-out-btn" aria-label="Sign out" data-i18n-aria="ariaSignOut" class="sign-out-btn">
               <span class="signout-icon"></span>
             </button>
           </div>
@@ -64,21 +72,21 @@
     <!-- List of available lists -->
     <div id="lists-panel" style="display:none;">
       <form id="add-list-form">
-        <input type="text" id="new-list-name" placeholder="List name..." style="flex:1;" />
-        <button id="add-list-btn" type="submit" aria-label="Add list">
+        <input type="text" id="new-list-name" placeholder="List name..." data-i18n-placeholder="listNamePlaceholder" style="flex:1;" />
+        <button id="add-list-btn" type="submit" aria-label="Add list" data-i18n-aria="ariaAddList">
           <span class="plus-icon"></span>
         </button>
       </form>
       <div id="user-lists-container">
         <div id="user-owned-lists-section">
-          <div class="lists-title">My lists</div>
+          <div class="lists-title" data-i18n="myLists">My lists</div>
           <div id="user-owned-lists"></div>
         </div>
         <div id ="user-lists-separator">
           <hr>
         </div>
         <div id="user-shared-lists-section" style="margin-top:1.2em;">
-          <div class="lists-title">Shared with me</div>
+          <div class="lists-title" data-i18n="sharedWithMe">Shared with me</div>
           <div id="user-shared-lists"></div>
         </div>
       </div>
@@ -86,8 +94,8 @@
     <!-- Items list -->
     <div id="main-list-view" style="display:none;">
       <form id="add-item-form">
-        <input type="text" id="add-item" placeholder="Add an item..." required />
-        <button type="submit" aria-label="Add">
+        <input type="text" id="add-item" placeholder="Add an item..." data-i18n-placeholder="addItemPlaceholder" required />
+        <button type="submit" aria-label="Add" data-i18n-aria="ariaAdd">
           <span class="plus-icon"></span>
         </button>
       </form>
@@ -98,7 +106,7 @@
       <div class="settings-modal-content" style="min-width:220px;max-width:90vw;">
         <div class="remove-modal-title"></div>
         <div class="remove-modal-actions">
-          <button id="remove-cancel-btn" class="text-btn" type="button">Cancel</button>
+          <button id="remove-cancel-btn" class="text-btn" type="button" data-i18n="cancel">Cancel</button>
           <button id="remove-confirm-btn" class="text-btn" type="button"></button>
         </div>
       </div>

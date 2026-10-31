@@ -1,4 +1,5 @@
 import { showConfirmDialog } from './confirm.js';
+import { t } from './i18n.js';
 
 /**
  * Opens the item edition dialog (rename or delete the item).
@@ -36,7 +37,7 @@ export function openEditItemDialog(itemName, { onRename, onDelete }) {
   input.required = true;
   const renameBtn = document.createElement('button');
   renameBtn.type = 'submit';
-  renameBtn.textContent = 'Rename';
+  renameBtn.textContent = t('rename');
   form.append(input, renameBtn);
   form.onsubmit = async (e) => {
     e.preventDefault();
@@ -52,9 +53,9 @@ export function openEditItemDialog(itemName, { onRename, onDelete }) {
   delBtn.className = 'text-btn';
   delBtn.style.background = '#d32f2f';
   delBtn.style.alignSelf = 'flex-end';
-  delBtn.textContent = 'Delete item';
+  delBtn.textContent = t('deleteItem');
   delBtn.onclick = () => {
-    showConfirmDialog('Delete this item?', 'Delete', async () => {
+    showConfirmDialog(t('confirmDeleteItem'), t('delete'), async () => {
       await onDelete();
       close();
     });
