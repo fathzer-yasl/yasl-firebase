@@ -1,39 +1,56 @@
 import { appRelease } from './release.js';
 
+const THEME_KEY = 'yasl-theme';
+const LEGACY_THEME_KEY = 'yasl-darkmode';
+const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
 export function setupSettings(appState) {
   const darkModeCSS = document.getElementById('dark-mode-css');
-  const darkModeToggle = document.getElementById('dark-mode-toggle');
+  const themeRadios = document.querySelectorAll('input[name="theme"]');
   const settingsBtn = document.getElementById('settings-btn');
   const settingsModal = document.getElementById('settings-modal');
   const settingsClose = document.getElementById('settings-close');
 
-  function setDarkMode(enabled) {
-    if (enabled) {
+  function getTheme() {
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved) return saved;
+    // Migrate the legacy boolean preference if present
+    const legacy = localStorage.getItem(LEGACY_THEME_KEY);
+    if (legacy !== null) {
+      const mode = legacy === '1' ? 'dark' : 'light';
+      localStorage.setItem(THEME_KEY, mode);
+      localStorage.removeItem(LEGACY_THEME_KEY);
+      return mode;
+    }
+    return 'system';
+  }
+
+  function applyTheme(mode) {
+    const dark = mode === 'dark' || (mode === 'system' && systemThemeQuery.matches);
+    if (dark) {
       darkModeCSS.removeAttribute('disabled');
-      localStorage.setItem('yasl-darkmode', '1');
     } else {
       darkModeCSS.setAttribute('disabled', '');
-      localStorage.setItem('yasl-darkmode', '0');
     }
   }
 
-  // On page load, apply saved dark mode preference
-  (function() {
-    const saved = localStorage.getItem('yasl-darkmode');
-    if (saved === '1') {
-      setDarkMode(true);
-      if (darkModeToggle) darkModeToggle.checked = true;
-    } else {
-      setDarkMode(false);
-      if (darkModeToggle) darkModeToggle.checked = false;
-    }
-  })();
+  function setTheme(mode) {
+    localStorage.setItem(THEME_KEY, mode);
+    applyTheme(mode);
+  }
 
-  if (darkModeToggle) {
-    darkModeToggle.addEventListener('change', (e) => {
-      setDarkMode(e.target.checked);
+  // On page load, apply saved theme preference and check the matching radio
+  const currentTheme = getTheme();
+  applyTheme(currentTheme);
+  themeRadios.forEach(radio => {
+    radio.checked = radio.value === currentTheme;
+    radio.addEventListener('change', () => {
+      if (radio.checked) setTheme(radio.value);
     });
-  }
+  });
+
+  // Re-apply when the OS theme changes (effective only in 'system' mode)
+  systemThemeQuery.addEventListener('change', () => applyTheme(getTheme()));
 
   // Set app name and version in settings modal
   const infoDiv = document.getElementById('app-version-info');

@@ -32,20 +32,27 @@
     <div id="settings-modal" class="settings-modal" style="display:none;">
       <div class="settings-modal-content">
         <button id="settings-close" aria-label="Close settings" class="settings-close">&times;</button>
-        <div style="margin-bottom:1em;">
-          <input type="checkbox" id="dark-mode-toggle">
-          <label for="dark-mode-toggle" style="font-size:0.97em;cursor:pointer;">Dark mode</label>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:1em;gap:1em;">
-          <div id="settings-user-info">
-            <span id="user-name"></span>
-            <span id="user-email"></span>
+        <div class="settings-card">
+          <div class="settings-card-title">Theme</div>
+          <div class="theme-options">
+            <label><input type="radio" name="theme" value="light"> Light</label>
+            <label><input type="radio" name="theme" value="dark"> Dark</label>
+            <label><input type="radio" name="theme" value="system"> System</label>
           </div>
-          <button id="sign-out-btn" aria-label="Sign out" class="sign-out-btn">
-            <span class="signout-icon"></span>
-          </button>
         </div>
-        <div id="app-version-info" style="font-size:0.75em;color:#888;margin-top:0.5em;text-align:right;width:100%;"></div>
+        <div class="settings-card">
+          <div class="settings-card-title">Connection</div>
+          <div id="settings-connection">
+            <div id="settings-user-info">
+              <span id="user-name"></span>
+              <span id="user-email"></span>
+            </div>
+            <button id="sign-out-btn" aria-label="Sign out" class="sign-out-btn">
+              <span class="signout-icon"></span>
+            </button>
+          </div>
+        </div>
+        <div id="app-version-info"></div>
       </div>
     </div>
     <!-- List of available lists -->
