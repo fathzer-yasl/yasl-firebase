@@ -2,6 +2,9 @@ import { getLanguagePref, setLanguagePref } from './i18n.js';
 
 const THEME_KEY = 'yasl-theme';
 const LEGACY_THEME_KEY = 'yasl-darkmode';
+// Page background colors, used as the browser theme color (status/navigation bars)
+const LIGHT_BACKGROUND = '#f6f8fa';
+const DARK_BACKGROUND = '#181a1b';
 const ITEM_EDIT_MODE_KEY = 'yasl-item-edit-mode';
 export const ITEM_EDIT_MODE_EVENT = 'item-edit-mode-changed';
 const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -39,6 +42,10 @@ export function setupSettings(appState) {
 
   function applyTheme(mode) {
     const dark = mode === 'dark' || (mode === 'system' && systemThemeQuery.matches);
+    // Keep the system bars in sync with the chosen theme, whatever the OS preference is
+    document.querySelectorAll('meta[name="theme-color"]').forEach(meta => {
+      meta.content = dark ? DARK_BACKGROUND : LIGHT_BACKGROUND;
+    });
     if (dark) {
       darkModeCSS.removeAttribute('disabled');
     } else {
