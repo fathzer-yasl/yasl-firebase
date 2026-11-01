@@ -165,14 +165,16 @@ Releases are published to [Docker Hub](https://hub.docker.com/) by a GitHub Acti
    - computes the build version `<tag>-<date>-<time>` (UTC, e.g. `0.0.4-20261031-1740`) and injects it as the application version (this is the version the app displays in Settings; it also names the service worker cache, so every build starts with a fresh cache),
    - builds the distribution package with Vite,
    - builds the Docker image and pushes it to Docker Hub as `fathzer/yasl:<tag>-<date>-<time>`,
-   - if the tag has the form `x.y.z`, also pushes `fathzer/yasl:x.y.z` and updates the floating `fathzer/yasl:latest` tag.
+   - if the tag has the form `x.y.z` **and** points to a commit of `main`, also pushes `fathzer/yasl:x.y.z` and updates the floating `fathzer/yasl:latest` tag.
+
+Every tag is published, whatever the branch it is on.
 
 ### Tag naming rules
 
 - A leading `v` is stripped: pushing `v0.0.4` or `0.0.4` both publish `yasl:0.0.4`. Any `/` in the tag is replaced by `-`.
-- Only tags of the form `x.y.z` are considered real releases: they update `yasl:x.y.z` and `latest`.
-- Any other tag (e.g. `0.0.5-rc1`) is a release candidate: it only publishes `yasl:<tag>-<date>-<time>` and never moves `latest`.
-- Publishing an older `x.y.z` tag (e.g. a hotfix on a previous version) also moves `latest`.
+- Only tags of the form `x.y.z` on a commit of `main` are considered real releases: they update `yasl:x.y.z` and `latest`.
+- Any other tag (e.g. `0.0.5-rc1`, or any tag on a commit that is not in `main`) is a release candidate: it only publishes `yasl:<tag>-<date>-<time>` and never moves `latest`.
+- Publishing an older `x.y.z` tag on `main` (e.g. a hotfix on a previous version) also moves `latest`.
 
 ### Version numbering
 
