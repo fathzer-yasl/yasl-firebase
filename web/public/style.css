@@ -65,7 +65,7 @@ ul#item-list input[type="checkbox"] {
   background: #fafbfc;
   transition: box-shadow 0.2s;
 }
-ul#add-item-list li {
+ul#item-list li {
   display: flex;
   align-items: center;
   gap: 0.5em;
@@ -76,10 +76,6 @@ ul#add-item-list li {
   align-items: center;
   margin-left: auto;
   gap: 0.25em;
-}
-ul#add-item-list input[type="checkbox"] {
-  transform: scale(1.1);
-  margin-right: 0.5em;
 }
 form {
   display: flex;

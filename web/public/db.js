@@ -170,15 +170,43 @@
      * @returns {Promise<string>} The ID of the newly created list
      * @throws {Error} If no logged in user with an email is found
      */
-    createList(name) {
+    async createList(name) {
+      return this.#createListDocument({ name, list: [] });
+    }
+
+    /**
+     * Creates a copy of an existing list, owned by the logged in user only.
+     * The copy gets the items and the settings of the source list, but not
+     * its other users or guests.
+     * @param {Object} list - The list to duplicate ({name, list, urgentEnabled, ...})
+     * @returns {Promise<string>} The ID of the newly created list
+     * @throws {Error} If no logged in user with an email is found
+     */
+    async duplicateList(list) {
+      const items = Array.isArray(list.list) ? list.list.map(item => ({ ...item })) : [];
+      return this.#createListDocument({
+        name: list.name || '',
+        urgentEnabled: list.urgentEnabled !== false,
+        list: items
+      });
+    }
+
+    /**
+     * Creates a list document owned by the logged in user.
+     * @param {Object} data - The list fields (name, list, urgentEnabled, ...).
+     *   The users and guests fields are always set by this method and cannot be overridden.
+     * @returns {Promise<string>} The ID of the newly created list
+     * @throws {Error} If no logged in user with an email is found
+     */
+    async #createListDocument(data) {
       const user = this.#appState.user;
       if (!user?.email) throw new Error('A logged in user with an email is required');
-      return this.#firestore.collection(FireDB.#LISTS_COLLECTION).add({
-        name,
+      const docRef = await this.#firestore.collection(FireDB.#LISTS_COLLECTION).add({
+        ...data,
         users: [user.email],
-        guests: [],
-        list: []
-      }).then(docRef => docRef.id);
+        guests: []
+      });
+      return docRef.id;
     }
   }
 

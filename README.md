@@ -11,7 +11,7 @@ A simple JavaScript web app that stores a shopping list in Firestore and updates
 - Mark items as urgent.
 - Rename or delete items via an edit button or a long press (configurable in Settings).
 - Share lists with other users, optionally granting them admin permissions.
-- Rename lists, delete them.
+- Rename lists, duplicate them, delete them.
 - All changes to items list are synchronized instantly across all open, signed-in instances.
 
 ## Setup Instructions

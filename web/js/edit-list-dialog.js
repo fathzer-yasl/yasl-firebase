@@ -213,6 +213,21 @@ export function openEditListDialog(list, appState) {
   }
   content.appendChild(usersCard);
 
+  // --- Duplicate card: creates a private copy of the list ---
+  const duplicateCard = card(t('cardDuplicate'));
+  const dupBtn = document.createElement('button');
+  dupBtn.className = 'text-btn';
+  dupBtn.textContent = t('duplicateList');
+  dupBtn.onclick = async () => {
+    dupBtn.disabled = true;
+    const name = ((data.name || '') + t('copySuffix')).trim();
+    const newId = await window.db.duplicateList({ ...list, name });
+    close();
+    appState.setListId(newId);
+  };
+  duplicateCard.appendChild(dupBtn);
+  content.appendChild(duplicateCard);
+
   // --- Danger zone: delete the list for admins, leave it for guests ---
   const dangerCard = card(t('dangerZone'));
   if (isAdmin) {
